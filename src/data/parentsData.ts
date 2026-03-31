@@ -151,7 +151,7 @@ function generateParents(): Parent[] {
         child.trialOutcomeMarked = dayOffset < 0 ? rand() > 0.5 : false;
       }
 
-      if (childStatus === "TRIAL ATTENDED") {
+      if (childStatus === "TRIAL DONE") {
         child.hoursSinceTrial = randInt(2, 96);
         child.packageInterest = pick(packageInterests);
       }

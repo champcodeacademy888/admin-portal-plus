@@ -153,7 +153,11 @@ function KanbanView({ leads: kanbanLeads, onLeadClick }: { leads: Lead[]; onLead
                     kanbanColors[status] || "border-t-border"
                   )}
                 >
-                  <p className="text-sm font-medium truncate">{lead.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground font-mono">{lead.id}</span>
+                    <p className="text-sm font-medium truncate">{lead.name}</p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{lead.children.map(c => c.name).join(", ")}</p>
                   <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
                     <span>{countryFlags[lead.country] || "🌍"}</span>
                     <span>{lead.channel}</span>
@@ -192,7 +196,7 @@ export default function LeadsPage() {
   const [columnsOpen, setColumnsOpen] = useState(false);
 
   const allColumnKeys = [
-    { key: "name", label: "Parent Name" },
+    { key: "name", label: "Lead" },
     { key: "status", label: "Status" },
     { key: "country", label: "Country" },
     { key: "channel", label: "Channel" },
@@ -336,15 +340,23 @@ export default function LeadsPage() {
 
   const columns = [
     {
-      key: "name", header: "Parent Name", render: (r: Lead) => (
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium">{r.name}</span>
-          {r.reengagementDate && (
-            <span className="text-primary" title={`Re-engagement: ${format(new Date(r.reengagementDate), "d MMM yyyy")}`}>
-              <Calendar size={13} />
-            </span>
-          )}
-          {r.handedOff && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-success/15 text-success">Handed Off</span>}
+      key: "name", header: "Lead", render: (r: Lead) => (
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
+            <span className="font-medium">{r.name}</span>
+            {r.reengagementDate && (
+              <span className="text-primary" title={`Re-engagement: ${format(new Date(r.reengagementDate), "d MMM yyyy")}`}>
+                <Calendar size={13} />
+              </span>
+            )}
+            {r.handedOff && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-success/15 text-success">Handed Off</span>}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            {r.children.map((c, i) => (
+              <span key={i}>{i > 0 && " · "}{c.name} ({c.age}y)</span>
+            ))}
+          </div>
         </div>
       ),
     },
@@ -580,7 +592,8 @@ export default function LeadsPage() {
           {currentLead && (
             <div className="flex flex-col h-full">
               <SheetHeader className="px-6 py-5 border-b border-border">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-mono">{currentLead.id}</span>
                   <SheetTitle className="text-lg">{currentLead.name}</SheetTitle>
                 </div>
               </SheetHeader>
@@ -594,10 +607,20 @@ export default function LeadsPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Source</span><span>{currentLead.source}</span></div>
                 </div>
 
-                {/* Child Info */}
-                <div className="grid grid-cols-2 gap-4 text-sm border-t border-border pt-4">
-                  <div><span className="text-muted-foreground text-xs block mb-1">Child Age</span><span className="font-medium">{currentLead.age}</span></div>
-                  <div><span className="text-muted-foreground text-xs block mb-1">Level</span><span>{currentLead.level}</span></div>
+                {/* Children */}
+                <div className="border-t border-border pt-4">
+                  <h3 className="text-sm font-semibold mb-2">Children ({currentLead.children.length})</h3>
+                  <div className="space-y-2">
+                    {currentLead.children.map((child, i) => (
+                      <div key={i} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                        <span className="text-sm font-medium">{child.name}</span>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>Age {child.age}</span>
+                          <span>{child.level}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Status & AI */}

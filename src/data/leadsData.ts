@@ -3,8 +3,16 @@ import { format } from "date-fns";
 type AIStatus = "active" | "admin" | "completed";
 type LeadStatus = "LEAD" | "TRIAL ATTENDED" | "NO SHOW" | "ENROLLED" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
 
-export interface Lead {
+export interface Child {
   name: string;
+  age: number;
+  level: string;
+}
+
+export interface Lead {
+  id: string;
+  name: string;
+  children: Child[];
   status: LeadStatus;
   country: string;
   channel: "WhatsApp" | "Messenger";
@@ -53,6 +61,12 @@ const lastNames = [
   "Schmidt","Ramos","Takahashi","Chua","Guerrero","Rao","Herrera","Watanabe","Malik","Diaz"
 ];
 
+const childFirstNames = [
+  "Aiden","Sophia","Liam","Emma","Noah","Mia","Lucas","Ava","Ethan","Chloe",
+  "Oliver","Isla","Zara","Leo","Maya","Kai","Aria","Ryan","Luna","Adam",
+  "Hana","Yuki","Arjun","Sara","Ravi","Noor","Zain","Lily","Finn","Jade",
+];
+
 const countries = ["Philippines","Singapore","Malaysia","Sri Lanka","UAE","Hong Kong","Indonesia"];
 const channels: ("WhatsApp" | "Messenger")[] = ["WhatsApp","Messenger"];
 const sources = ["Meta Ads (Facebook)","Meta Ads (WhatsApp)","Meta Ads (Form)","Referral","Website","Instagram","Google Ads"];
@@ -95,6 +109,7 @@ function generateLeads(): Lead[] {
   const result: Lead[] = [];
 
   for (let i = 0; i < 200; i++) {
+    const id = `#${61000 + i}`;
     const firstName = pick(firstNames);
     const lastName = pick(lastNames);
     const name = `${firstName} ${lastName}`;
@@ -114,6 +129,19 @@ function generateLeads(): Lead[] {
     };
     const phone = `${phoneCountryCodes[country]} ${randInt(900,999)} ${randInt(100,999)} ${randInt(1000,9999)}`;
 
+    // Generate 1-3 children per lead
+    const childCount = randInt(1, 3);
+    const children: Child[] = [];
+    for (let c = 0; c < childCount; c++) {
+      const childAge = randInt(6, 15);
+      const childLevel = status === "LEAD" || status === "INQUIRY" ? "—" : pick(levels);
+      children.push({
+        name: `${pick(childFirstNames)} ${lastName}`,
+        age: childAge,
+        level: childLevel,
+      });
+    }
+
     const noteCount = randInt(0, 3);
     const notes: { text: string; time: string }[] = [];
     for (let n = 0; n < noteCount; n++) {
@@ -124,7 +152,7 @@ function generateLeads(): Lead[] {
     }
 
     const lead: Lead = {
-      name, status, country, channel, source, age, level,
+      id, name, children, status, country, channel, source, age: children[0].age, level: children[0].level,
       lastContacted, lastContactedHrs, aiAgent, assignedTo, phone, notes,
     };
 

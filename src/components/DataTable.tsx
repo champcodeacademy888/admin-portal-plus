@@ -29,6 +29,7 @@ export default function DataTable<T extends Record<string, unknown>>({
   currentPage = 1,
   totalPages = 1,
   onRowClick,
+  onPageChange,
   rowClassName,
   emptyMessage = "No data found",
   selectable = false,

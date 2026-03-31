@@ -89,7 +89,7 @@ function ConversionStatsBar() {
   const inquiries = allLeadChildren.filter(l => l.status === "INQUIRY").length;
   const leadsCount = allLeadChildren.filter(l => l.status === "LEAD").length;
   const trialArranged = allLeadChildren.filter(l => l.status === "TRIAL ARRANGED").length;
-  const trialAttended = allLeadChildren.filter(l => l.status === "TRIAL ATTENDED").length;
+  const trialDone = allLeadChildren.filter(l => l.status === "TRIAL DONE").length;
   // Enrolled children from all parents
   const enrolled = getAllChildren().filter(c => c.status === "ENROLLED").length;
 

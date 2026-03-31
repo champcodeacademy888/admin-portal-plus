@@ -21,7 +21,7 @@ const todayStr = todayFormatted;
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
 // Lead statuses (pre-enrollment pipeline)
-const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST", "COLD"];
+const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST"];
 
 // Get all children in lead pipeline stages
 const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.status));
@@ -37,7 +37,7 @@ const needsAttentionCount = allLeadChildren.filter(needsAttention).length;
 
 const statusVariantMap: Record<string, string> = {
   "LEAD": "lead", "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow",
-  "ENROLLED": "enrolled", "CLOSED WON": "closed_won", "LOST": "lost", "COLD": "cold",
+  "ENROLLED": "enrolled", "CLOSED WON": "closed_won", "LOST": "lost",
   "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry",
 };
 
@@ -46,13 +46,13 @@ const tabs = [
   { label: "Needs Attention", badgeCount: needsAttentionCount, badgeColor: "bg-destructive" },
   { label: "Inquiry" }, { label: "Lead" }, { label: "Trial Arranged" },
   { label: "Trial Done" }, { label: "Missed Trial" }, { label: "Closed Won" },
-  { label: "Lost" }, { label: "Cold" },
+  { label: "Lost" },
 ];
 
 const statusFilterMap: Record<string, string> = {
   "Inquiry": "INQUIRY", "Lead": "LEAD", "Trial Arranged": "TRIAL ARRANGED",
   "Trial Done": "TRIAL DONE", "Missed Trial": "MISSED TRIAL", "Closed Won": "CLOSED WON",
-  "Lost": "LOST", "Cold": "COLD",
+  "Lost": "LOST",
 };
 
 function ChannelIcon({ channel }: { channel: string }) {
@@ -121,11 +121,11 @@ function ConversionStatsBar() {
   );
 }
 
-const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST", "COLD"];
+const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST"];
 const kanbanColors: Record<string, string> = {
   "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
   "TRIAL DONE": "border-t-purple-500", "MISSED TRIAL": "border-t-destructive",
-  "CLOSED WON": "border-t-success", "LOST": "border-t-muted-foreground", "COLD": "border-t-muted-foreground",
+  "CLOSED WON": "border-t-success", "LOST": "border-t-muted-foreground",
 };
 
 function KanbanView({ leads, onLeadClick }: { leads: ChildWithParent[]; onLeadClick: (lead: ChildWithParent) => void }) {
@@ -365,7 +365,7 @@ export default function LeadsPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleMarkAsLost(r)}>Mark as Lost</DropdownMenuItem>
-              {(r.status === "LOST" || r.status === "COLD") && (
+              {r.status === "LOST" && (
                 <DropdownMenuItem onClick={() => handleReengage(r)}>
                   <Calendar size={14} className="mr-2" /> Schedule Re-engagement
                 </DropdownMenuItem>

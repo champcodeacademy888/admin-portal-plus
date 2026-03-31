@@ -10,7 +10,7 @@ import { parents, countryFlags, type Parent, type Child } from "@/data/parentsDa
 const statusVariantMap: Record<string, string> = {
   "INQUIRY": "inquiry", "LEAD": "lead", "TRIAL ARRANGED": "trial_arranged",
   "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow", "ENROLLED": "enrolled",
-  "CLOSED WON": "closed_won", "LOST": "lost", "COLD": "cold",
+  "CLOSED WON": "closed_won", "LOST": "lost",
 };
 
 function ChannelIcon({ channel }: { channel: string }) {
@@ -47,7 +47,7 @@ const tabs = [
   { label: "Has Leads", count: parents.filter(p => p.children.some(c => ["INQUIRY", "LEAD"].includes(c.status))).length },
   { label: "Has Trials", count: parents.filter(p => p.children.some(c => ["TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL"].includes(c.status))).length },
   { label: "Has Enrolled", count: parents.filter(p => p.children.some(c => c.status === "ENROLLED" || c.status === "CLOSED WON")).length },
-  { label: "Has Lost/Cold", count: parents.filter(p => p.children.some(c => ["LOST", "COLD"].includes(c.status))).length },
+  { label: "Has Lost", count: parents.filter(p => p.children.some(c => c.status === "LOST")).length },
 ];
 
 const tabFilters: Record<string, (p: Parent) => boolean> = {
@@ -55,7 +55,7 @@ const tabFilters: Record<string, (p: Parent) => boolean> = {
   "Has Leads": p => p.children.some(c => ["INQUIRY", "LEAD"].includes(c.status)),
   "Has Trials": p => p.children.some(c => ["TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL"].includes(c.status)),
   "Has Enrolled": p => p.children.some(c => c.status === "ENROLLED" || c.status === "CLOSED WON"),
-  "Has Lost/Cold": p => p.children.some(c => ["LOST", "COLD"].includes(c.status)),
+  "Has Lost": p => p.children.some(c => c.status === "LOST"),
 };
 
 const columns = [

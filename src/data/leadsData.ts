@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 
 type AIStatus = "active" | "admin" | "completed";
-type LeadStatus = "LEAD" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "CLOSED WON" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
+type LeadStatus = "LEAD" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "CLOSED WON" | "LOST" | "TRIAL ARRANGED" | "INQUIRY";
 
 export interface Child {
   name: string;
@@ -70,7 +70,7 @@ const childFirstNames = [
 const countries = ["Philippines","Singapore","Malaysia","Sri Lanka","UAE","Hong Kong","Indonesia"];
 const channels: ("WhatsApp" | "Messenger")[] = ["WhatsApp","Messenger"];
 const sources = ["Meta Ads (Facebook)","Meta Ads (WhatsApp)","Meta Ads (Form)","Referral","Website","Instagram","Google Ads"];
-const statuses: LeadStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL DONE","MISSED TRIAL","ENROLLED","LOST","COLD"];
+const statuses: LeadStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL DONE","MISSED TRIAL","ENROLLED","CLOSED WON","LOST"];
 const aiStatuses: AIStatus[] = ["active","active","admin","completed"];
 const admins = ["Sarah A.","James L.","Maria G.","David K."];
 const levels = ["—","Beginner","Intermediate","Advanced"];

@@ -61,6 +61,12 @@ const lastNames = [
   "Schmidt","Ramos","Takahashi","Chua","Guerrero","Rao","Herrera","Watanabe","Malik","Diaz"
 ];
 
+const childFirstNames = [
+  "Aiden","Sophia","Liam","Emma","Noah","Mia","Lucas","Ava","Ethan","Chloe",
+  "Oliver","Isla","Zara","Leo","Maya","Kai","Aria","Ryan","Luna","Adam",
+  "Hana","Yuki","Arjun","Sara","Ravi","Noor","Zain","Lily","Finn","Jade",
+];
+
 const countries = ["Philippines","Singapore","Malaysia","Sri Lanka","UAE","Hong Kong","Indonesia"];
 const channels: ("WhatsApp" | "Messenger")[] = ["WhatsApp","Messenger"];
 const sources = ["Meta Ads (Facebook)","Meta Ads (WhatsApp)","Meta Ads (Form)","Referral","Website","Instagram","Google Ads"];

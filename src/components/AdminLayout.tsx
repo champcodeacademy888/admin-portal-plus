@@ -10,8 +10,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 const menuItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { label: "Leads", icon: Users, path: "/leads" },
-  { label: "Trials", icon: ClipboardList, path: "/trials" },
+  { label: "Parents", icon: Users, path: "/parents" },
+  { label: "Leads", icon: ClipboardList, path: "/leads" },
   { label: "Enrolments", icon: UserPlus, path: "/enrolments" },
   { label: "Packages", icon: Package, path: "/packages" },
   { label: "Students", icon: GraduationCap, path: "/students" },

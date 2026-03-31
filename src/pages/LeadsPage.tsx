@@ -13,48 +13,46 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { leads, todayFormatted, type Lead } from "@/data/leadsData";
-
-const countryFlags: Record<string, string> = {
-  "Singapore": "🇸🇬", "Malaysia": "🇲🇾", "Philippines": "🇵🇭", "Indonesia": "🇮🇩",
-  "UAE": "🇦🇪", "Hong Kong": "🇭🇰", "Sri Lanka": "🇱🇰",
-};
-
-type AIStatus = "active" | "admin" | "completed";
-type LeadStatus = "LEAD" | "TRIAL ATTENDED" | "NO SHOW" | "ENROLLED" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
+import { parents, countryFlags, todayFormatted, type Parent, type ChildWithParent, type ChildStatus, type AIStatus, getAllChildren } from "@/data/parentsData";
 
 const today = new Date();
 const todayStr = todayFormatted;
 
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
-const needsAttention = (lead: Lead) =>
-  (lead.channel === "Messenger" && lead.lastContactedHrs >= 20) ||
-  (lead.status === "TRIAL ATTENDED" && (lead.hoursSinceTrial ?? lead.lastContactedHrs) >= 24) ||
-  (lead.status === "NO SHOW") ||
-  (lead.status === "TRIAL ARRANGED" && lead.trialPassed && !lead.trialOutcomeMarked) ||
-  (lead.reengagementDate && new Date(lead.reengagementDate) <= today);
+// Lead statuses (pre-enrollment pipeline)
+const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "LOST", "COLD"];
 
-const needsAttentionCount = leads.filter(needsAttention).length;
+// Get all children in lead pipeline stages
+const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.status));
 
-const statusVariantMap: Record<string, "lead" | "trial_attended" | "noshow" | "enrolled" | "lost" | "cold" | "trial_arranged" | "inquiry"> = {
+const needsAttention = (c: ChildWithParent) =>
+  (c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 20) ||
+  (c.status === "TRIAL ATTENDED" && (c.hoursSinceTrial ?? c.parent.lastContactedHrs) >= 24) ||
+  (c.status === "NO SHOW") ||
+  (c.status === "TRIAL ARRANGED" && c.trialPassed && !c.trialOutcomeMarked) ||
+  (c.parent.reengagementDate && new Date(c.parent.reengagementDate) <= today);
+
+const needsAttentionCount = allLeadChildren.filter(needsAttention).length;
+
+const statusVariantMap: Record<string, string> = {
   "LEAD": "lead", "TRIAL ATTENDED": "trial_attended", "NO SHOW": "noshow",
   "ENROLLED": "enrolled", "LOST": "lost", "COLD": "cold",
   "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry",
 };
 
 const tabs = [
-  { label: "All", count: leads.length },
+  { label: "All", count: allLeadChildren.length },
   { label: "Needs Attention", badgeCount: needsAttentionCount, badgeColor: "bg-destructive" },
   { label: "Inquiry" }, { label: "Lead" }, { label: "Trial Arranged" },
-  { label: "Trial Attended" }, { label: "No Show" }, { label: "Enrolled" },
+  { label: "Trial Attended" }, { label: "No Show" },
   { label: "Lost" }, { label: "Cold" },
 ];
 
 const statusFilterMap: Record<string, string> = {
   "Inquiry": "INQUIRY", "Lead": "LEAD", "Trial Arranged": "TRIAL ARRANGED",
   "Trial Attended": "TRIAL ATTENDED", "No Show": "NO SHOW",
-  "Enrolled": "ENROLLED", "Lost": "LOST", "Cold": "COLD",
+  "Lost": "LOST", "Cold": "COLD",
 };
 
 function ChannelIcon({ channel }: { channel: string }) {
@@ -87,12 +85,13 @@ function FollowUpBadge({ hoursSinceTrial }: { hoursSinceTrial: number }) {
 }
 
 function ConversionStatsBar() {
-  const total = leads.length;
-  const inquiries = leads.filter(l => l.status === "INQUIRY").length;
-  const leadsCount = leads.filter(l => l.status === "LEAD").length;
-  const trialArranged = leads.filter(l => l.status === "TRIAL ARRANGED").length;
-  const trialAttended = leads.filter(l => l.status === "TRIAL ATTENDED").length;
-  const enrolled = leads.filter(l => l.status === "ENROLLED").length;
+  const total = allLeadChildren.length;
+  const inquiries = allLeadChildren.filter(l => l.status === "INQUIRY").length;
+  const leadsCount = allLeadChildren.filter(l => l.status === "LEAD").length;
+  const trialArranged = allLeadChildren.filter(l => l.status === "TRIAL ARRANGED").length;
+  const trialAttended = allLeadChildren.filter(l => l.status === "TRIAL ATTENDED").length;
+  // Enrolled children from all parents
+  const enrolled = getAllChildren().filter(c => c.status === "ENROLLED").length;
 
   const inquiryToLead = inquiries + leadsCount > 0 ? Math.round((leadsCount / (inquiries + leadsCount)) * 100) : 0;
   const leadToTrial = leadsCount + trialArranged > 0 ? Math.round((trialArranged / (leadsCount + trialArranged)) * 100) : 0;
@@ -122,18 +121,18 @@ function ConversionStatsBar() {
   );
 }
 
-const kanbanStatuses: LeadStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "ENROLLED", "LOST", "COLD"];
+const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "LOST", "COLD"];
 const kanbanColors: Record<string, string> = {
   "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
-  "TRIAL ATTENDED": "border-t-purple-500", "NO SHOW": "border-t-destructive", "ENROLLED": "border-t-success",
+  "TRIAL ATTENDED": "border-t-purple-500", "NO SHOW": "border-t-destructive",
   "LOST": "border-t-muted-foreground", "COLD": "border-t-muted-foreground",
 };
 
-function KanbanView({ leads: kanbanLeads, onLeadClick }: { leads: Lead[]; onLeadClick: (lead: Lead) => void }) {
+function KanbanView({ leads, onLeadClick }: { leads: ChildWithParent[]; onLeadClick: (lead: ChildWithParent) => void }) {
   return (
     <div className="flex gap-3 overflow-x-auto pb-4">
       {kanbanStatuses.map((status) => {
-        const statusLeads = kanbanLeads.filter(l => l.status === status);
+        const statusLeads = leads.filter(l => l.status === status);
         return (
           <div key={status} className="min-w-[220px] w-[220px] shrink-0">
             <div className="flex items-center justify-between mb-2 px-1">
@@ -157,14 +156,14 @@ function KanbanView({ leads: kanbanLeads, onLeadClick }: { leads: Lead[]; onLead
                     <span className="text-[10px] text-muted-foreground font-mono">{lead.id}</span>
                     <p className="text-sm font-medium truncate">{lead.name}</p>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{lead.children.map(c => c.name).join(", ")}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">Parent: {lead.parent.name}</p>
                   <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
-                    <span>{countryFlags[lead.country] || "🌍"}</span>
-                    <span>{lead.channel}</span>
+                    <span>{countryFlags[lead.parent.country] || "🌍"}</span>
+                    <span>{lead.parent.channel}</span>
                   </div>
                   <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
-                    <span>{lead.lastContacted}</span>
-                    <span>{lead.assignedTo}</span>
+                    <span>{lead.parent.lastContacted}</span>
+                    <span>{lead.parent.assignedTo}</span>
                   </div>
                 </div>
               ))}
@@ -180,10 +179,9 @@ export default function LeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
   const [activeTab, setActiveTab] = useState(0);
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [selectedChild, setSelectedChild] = useState<ChildWithParent | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
-  const [leadNotes, setLeadNotes] = useState<Record<string, { text: string; time: string }[]>>({});
   const [search, setSearch] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [countryFilter, setCountryFilter] = useState("all");
@@ -191,12 +189,13 @@ export default function LeadsPage() {
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "name", "status", "country", "channel", "lastContacted", "aiAgent", "assignedTo", "actions"
+    "student", "parent", "status", "country", "channel", "lastContacted", "assignedTo", "actions"
   ]));
   const [columnsOpen, setColumnsOpen] = useState(false);
 
   const allColumnKeys = [
-    { key: "name", label: "Lead" },
+    { key: "student", label: "Student" },
+    { key: "parent", label: "Parent" },
     { key: "status", label: "Status" },
     { key: "country", label: "Country" },
     { key: "channel", label: "Channel" },
@@ -205,7 +204,6 @@ export default function LeadsPage() {
     { key: "assignedTo", label: "Assigned To" },
     { key: "trialDate", label: "Trial Date" },
     { key: "packageInterest", label: "Package Interest" },
-    { key: "lastNote", label: "Last Note" },
     { key: "age", label: "Age" },
     { key: "level", label: "Level" },
     { key: "actions", label: "Actions" },
@@ -220,36 +218,23 @@ export default function LeadsPage() {
     });
   };
 
-  // Lost reason modal
   const [lostReasonOpen, setLostReasonOpen] = useState(false);
-  const [lostReasonTarget, setLostReasonTarget] = useState<Lead | null>(null);
+  const [lostReasonTarget, setLostReasonTarget] = useState<ChildWithParent | null>(null);
   const [selectedLostReason, setSelectedLostReason] = useState("");
   const [otherLostReason, setOtherLostReason] = useState("");
-
-  // Re-engagement date picker
   const [reengageOpen, setReengageOpen] = useState(false);
-  const [reengageTarget, setReengageTarget] = useState<Lead | null>(null);
+  const [reengageTarget, setReengageTarget] = useState<ChildWithParent | null>(null);
   const [reengageDate, setReengageDate] = useState<Date | undefined>();
-
-  // Handoff confirmation
-  const [handoffOpen, setHandoffOpen] = useState(false);
-
-  // Lead-level state overrides
-  const [leadOverrides, setLeadOverrides] = useState<Record<string, Partial<Lead>>>({});
-
-  // Bulk action bar state
   const [bulkStatusOpen, setBulkStatusOpen] = useState(false);
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
 
-  const getLeadWithOverrides = (lead: Lead): Lead => ({ ...lead, ...leadOverrides[lead.name] });
-
-  const filteredLeads = leads.map(getLeadWithOverrides).filter((lead) => {
+  const filteredLeads = allLeadChildren.filter((child) => {
     const tab = tabs[activeTab].label;
-    if (tab === "Needs Attention" && !needsAttention(lead)) return false;
-    if (tab !== "All" && tab !== "Needs Attention" && lead.status !== statusFilterMap[tab]) return false;
-    if (search && !lead.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (countryFilter !== "all" && lead.country !== countryFilter) return false;
-    if (channelFilter !== "all" && lead.channel !== channelFilter) return false;
+    if (tab === "Needs Attention" && !needsAttention(child)) return false;
+    if (tab !== "All" && tab !== "Needs Attention" && child.status !== statusFilterMap[tab]) return false;
+    if (search && !child.name.toLowerCase().includes(search.toLowerCase()) && !child.parent.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (countryFilter !== "all" && child.parent.country !== countryFilter) return false;
+    if (channelFilter !== "all" && child.parent.channel !== channelFilter) return false;
     return true;
   });
 
@@ -262,61 +247,42 @@ export default function LeadsPage() {
     else setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
 
-  const openPanel = (lead: Lead) => {
-    setSelectedLead(lead);
+  const openPanel = (child: ChildWithParent) => {
+    setSelectedChild(child);
     setPanelOpen(true);
   };
 
-  const addNote = () => {
-    if (!noteText.trim() || !selectedLead) return;
-    const key = selectedLead.name;
-    const newNote = { text: noteText, time: new Date().toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) };
-    setLeadNotes((prev) => ({ ...prev, [key]: [...(prev[key] || selectedLead.notes || []), newNote] }));
-    setNoteText("");
-  };
+  const isMessengerWarning = (c: ChildWithParent) => c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 20;
 
-  const getNotesForLead = (lead: Lead) => leadNotes[lead.name] || lead.notes || [];
-
-  const isMessengerWarning = (lead: Lead) => lead.channel === "Messenger" && lead.lastContactedHrs >= 20;
-
-  const handleMarkAsLost = (lead: Lead) => {
-    setLostReasonTarget(lead);
+  const handleMarkAsLost = (c: ChildWithParent) => {
+    setLostReasonTarget(c);
     setSelectedLostReason("");
     setOtherLostReason("");
     setLostReasonOpen(true);
   };
 
   const confirmLostReason = () => {
-    if (!lostReasonTarget || (!selectedLostReason)) return;
-    const reason = selectedLostReason === "Other" ? otherLostReason : selectedLostReason;
-    setLeadOverrides((prev) => ({ ...prev, [lostReasonTarget.name]: { ...prev[lostReasonTarget.name], status: "LOST" as LeadStatus, lostReason: reason } }));
+    if (!lostReasonTarget || !selectedLostReason) return;
     setLostReasonOpen(false);
     setLostReasonTarget(null);
   };
 
-  const handleReengage = (lead: Lead) => {
-    setReengageTarget(lead);
+  const handleReengage = (c: ChildWithParent) => {
+    setReengageTarget(c);
     setReengageDate(undefined);
     setReengageOpen(true);
   };
 
   const confirmReengage = () => {
     if (!reengageTarget || !reengageDate) return;
-    setLeadOverrides((prev) => ({ ...prev, [reengageTarget.name]: { ...prev[reengageTarget.name], reengagementDate: reengageDate.toISOString() } }));
     setReengageOpen(false);
     setReengageTarget(null);
   };
 
-  const handleHandoff = () => {
-    if (!selectedLead) return;
-    setLeadOverrides((prev) => ({ ...prev, [selectedLead.name]: { ...prev[selectedLead.name], handedOff: true } }));
-    setHandoffOpen(false);
-  };
-
   const exportSelectedCSV = () => {
     const selected = Array.from(selectedIndices).map(i => filteredLeads[i]).filter(Boolean);
-    const headers = ["Name", "Status", "Country", "Channel", "Age", "Level", "Assigned To"];
-    const rows = selected.map(l => [l.name, l.status, l.country, l.channel, l.age, l.level, l.assignedTo]);
+    const headers = ["Student", "Parent", "Status", "Country", "Channel", "Age", "Level", "Assigned To"];
+    const rows = selected.map(l => [l.name, l.parent.name, l.status, l.parent.country, l.parent.channel, l.age, l.level, l.parent.assignedTo]);
     const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -325,85 +291,71 @@ export default function LeadsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const getLastNote = (lead: Lead) => {
-    const notes = getNotesForLead(lead);
-    if (notes.length === 0) return null;
-    return notes[notes.length - 1];
-  };
-
-  const trialDateColor = (lead: Lead) => {
-    if (!lead.trialDate) return "";
-    if (lead.trialDate.startsWith(todayStr)) return "text-primary font-semibold";
-    if (lead.trialPassed && !lead.trialOutcomeMarked) return "text-destructive font-semibold";
+  const trialDateColor = (c: ChildWithParent) => {
+    if (!c.trialDate) return "";
+    if (c.trialDate.startsWith(todayStr)) return "text-primary font-semibold";
+    if (c.trialPassed && !c.trialOutcomeMarked) return "text-destructive font-semibold";
     return "";
   };
 
   const columns = [
     {
-      key: "name", header: "Lead", render: (r: Lead) => (
+      key: "student", header: "Student", render: (r: ChildWithParent) => (
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
             <span className="font-medium">{r.name}</span>
-            {r.reengagementDate && (
-              <span className="text-primary" title={`Re-engagement: ${format(new Date(r.reengagementDate), "d MMM yyyy")}`}>
-                <Calendar size={13} />
-              </span>
-            )}
-            {r.handedOff && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-success/15 text-success">Handed Off</span>}
           </div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">
-            {r.children.map((c, i) => (
-              <span key={i}>{i > 0 && " · "}{c.name} ({c.age}y)</span>
-            ))}
+          <div className="text-[11px] text-muted-foreground mt-0.5">Age {r.age} · {r.level}</div>
+        </div>
+      ),
+    },
+    {
+      key: "parent", header: "Parent", render: (r: ChildWithParent) => (
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-muted-foreground font-mono">{r.parent.id}</span>
+            <span className="font-medium">{r.parent.name}</span>
           </div>
         </div>
       ),
     },
     {
-      key: "status", header: "Status", render: (r: Lead) => (
+      key: "status", header: "Status", render: (r: ChildWithParent) => (
         <div className="flex items-center gap-1 flex-wrap">
-          <StatusBadge variant={statusVariantMap[r.status] || "lead"}>{r.status}</StatusBadge>
+          <StatusBadge variant={statusVariantMap[r.status] as any}>{r.status}</StatusBadge>
           {r.status === "TRIAL ATTENDED" && r.hoursSinceTrial !== undefined && <FollowUpBadge hoursSinceTrial={r.hoursSinceTrial} />}
         </div>
       ),
     },
-    { key: "country", header: "Country", render: (r: Lead) => <span className="whitespace-nowrap">{countryFlags[r.country] || "🌍"} {r.country}</span> },
-    { key: "channel", header: "Channel", render: (r: Lead) => <ChannelIcon channel={r.channel} /> },
+    { key: "country", header: "Country", render: (r: ChildWithParent) => <span className="whitespace-nowrap">{countryFlags[r.parent.country] || "🌍"} {r.parent.country}</span> },
+    { key: "channel", header: "Channel", render: (r: ChildWithParent) => <ChannelIcon channel={r.parent.channel} /> },
     {
-      key: "lastContacted", header: "Last Contacted", render: (r: Lead) => (
+      key: "lastContacted", header: "Last Contacted", render: (r: ChildWithParent) => (
         <span className={isMessengerWarning(r) ? "text-destructive font-medium" : ""}>
-          {r.lastContacted}
+          {r.parent.lastContacted}
           {isMessengerWarning(r) && <span className="ml-1.5 text-[11px] text-warning">⚠ 24hr window</span>}
         </span>
       ),
     },
-    { key: "aiAgent", header: "AI Agent", render: (r: Lead) => <AIStatusBadge status={r.aiAgent} /> },
-    { key: "assignedTo", header: "Assigned To" },
+    { key: "aiAgent", header: "AI Agent", render: (r: ChildWithParent) => <AIStatusBadge status={r.parent.aiAgent} /> },
+    { key: "assignedTo", header: "Assigned To", render: (r: ChildWithParent) => <span>{r.parent.assignedTo}</span> },
     {
-      key: "trialDate", header: "Trial Date", render: (r: Lead) => {
+      key: "trialDate", header: "Trial Date", render: (r: ChildWithParent) => {
         if (r.status !== "TRIAL ARRANGED" || !r.trialDate) return <span className="text-muted-foreground">—</span>;
         return <span className={trialDateColor(r)}>{r.trialDate}</span>;
       },
     },
     {
-      key: "packageInterest", header: "Package Interest", render: (r: Lead) => {
-        if (r.status !== "TRIAL ATTENDED" && r.status !== "ENROLLED") return <span className="text-muted-foreground">—</span>;
+      key: "packageInterest", header: "Package Interest", render: (r: ChildWithParent) => {
+        if (r.status !== "TRIAL ATTENDED") return <span className="text-muted-foreground">—</span>;
         return <span>{r.packageInterest || "—"}</span>;
       },
     },
+    { key: "age", header: "Age", render: (r: ChildWithParent) => <span>{r.age}</span> },
+    { key: "level", header: "Level", render: (r: ChildWithParent) => <span>{r.level}</span> },
     {
-      key: "lastNote", header: "Last Note", render: (r: Lead) => {
-        const note = getLastNote(r);
-        if (!note) return <span className="text-muted-foreground">—</span>;
-        const preview = note.text.length > 40 ? note.text.substring(0, 40) + "..." : note.text;
-        return <span className="text-xs text-muted-foreground cursor-pointer hover:text-foreground" onClick={(e) => { e.stopPropagation(); openPanel(r); }}>{preview}</span>;
-      },
-    },
-    { key: "age", header: "Age" },
-    { key: "level", header: "Level" },
-    {
-      key: "actions", header: "Actions", render: (r: Lead) => (
+      key: "actions", header: "Actions", render: (r: ChildWithParent) => (
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <button className="p-1.5 rounded-md hover:bg-muted text-success" title="WhatsApp"><Phone size={15} /></button>
           <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" title="View" onClick={() => openPanel(r)}><Eye size={15} /></button>
@@ -432,16 +384,13 @@ export default function LeadsPage() {
     "Inquiry": "No inquiries at this stage",
     "Trial Arranged": "No trials arranged yet",
     "Trial Attended": "No trials attended yet",
-    "Enrolled": "No enrolled leads yet",
     "Lost": "No lost leads — keep it up!",
     "Cold": "No cold leads",
   };
 
-  const currentLead = selectedLead ? getLeadWithOverrides(selectedLead) : null;
-
   return (
     <div>
-      <PageHeader title="Leads" subtitle="Manage leads pipeline — inquiry to enrolment">
+      <PageHeader title="Leads" subtitle="Student pipeline — inquiry to trial">
         <div className="flex items-center gap-3">
           {needsAttentionCount > 0 && (
             <span className="flex items-center gap-1.5 text-xs font-medium text-warning bg-warning/10 px-3 py-1.5 rounded-full">
@@ -516,7 +465,7 @@ export default function LeadsPage() {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background placeholder:text-muted-foreground w-64"
-              placeholder="Search leads..."
+              placeholder="Search students or parents..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -537,9 +486,9 @@ export default function LeadsPage() {
           totalPages={viewAll ? 1 : totalPages}
           onPageChange={handlePageChange}
           viewingAll={viewAll}
-          onRowClick={(row) => openPanel(row as unknown as Lead)}
+          onRowClick={(row) => openPanel(row as unknown as ChildWithParent)}
           rowClassName={(row) => {
-            const r = row as unknown as Lead;
+            const r = row as unknown as ChildWithParent;
             return isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : "";
           }}
           emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
@@ -554,7 +503,7 @@ export default function LeadsPage() {
       {/* Bulk Action Bar */}
       {selectedIndices.size > 0 && (
         <div className="fixed bottom-0 left-64 right-0 bg-card border-t border-border shadow-lg px-6 py-3 flex items-center justify-between z-50">
-          <span className="text-sm font-medium">{selectedIndices.size} lead{selectedIndices.size > 1 ? "s" : ""} selected</span>
+          <span className="text-sm font-medium">{selectedIndices.size} student{selectedIndices.size > 1 ? "s" : ""} selected</span>
           <div className="flex items-center gap-2">
             <Popover open={bulkAssignOpen} onOpenChange={setBulkAssignOpen}>
               <PopoverTrigger asChild>
@@ -571,7 +520,7 @@ export default function LeadsPage() {
                 <button className="px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">Change status</button>
               </PopoverTrigger>
               <PopoverContent className="w-48" align="end">
-                {["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "ENROLLED", "LOST", "COLD"].map((s) => (
+                {leadStatuses.map((s) => (
                   <button key={s} className="w-full text-left px-3 py-2 text-sm hover:bg-muted rounded-md" onClick={() => setBulkStatusOpen(false)}>{s}</button>
                 ))}
               </PopoverContent>
@@ -586,67 +535,58 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {/* Lead Detail Side Panel */}
+      {/* Student Detail Side Panel */}
       <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
         <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto p-0">
-          {currentLead && (
+          {selectedChild && (
             <div className="flex flex-col h-full">
               <SheetHeader className="px-6 py-5 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground font-mono">{currentLead.id}</span>
-                  <SheetTitle className="text-lg">{currentLead.name}</SheetTitle>
+                  <span className="text-xs text-muted-foreground font-mono">{selectedChild.id}</span>
+                  <SheetTitle className="text-lg">{selectedChild.name}</SheetTitle>
+                  <StatusBadge variant={statusVariantMap[selectedChild.status] as any}>{selectedChild.status}</StatusBadge>
                 </div>
               </SheetHeader>
 
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-                {/* Contact Info */}
+                {/* Student Info */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><span className="text-muted-foreground text-xs block mb-1">Phone</span><span className="font-medium">{currentLead.phone}</span></div>
-                  <div><span className="text-muted-foreground text-xs block mb-1">Country</span><span>{countryFlags[currentLead.country] || "🌍"} {currentLead.country}</span></div>
-                  <div><span className="text-muted-foreground text-xs block mb-1">Channel</span><ChannelIcon channel={currentLead.channel} /></div>
-                  <div><span className="text-muted-foreground text-xs block mb-1">Source</span><span>{currentLead.source}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Age</span><span className="font-medium">{selectedChild.age}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Level</span><span>{selectedChild.level}</span></div>
+                  {selectedChild.trialDate && <div><span className="text-muted-foreground text-xs block mb-1">Trial Date</span><span className={trialDateColor(selectedChild)}>{selectedChild.trialDate}</span></div>}
+                  {selectedChild.packageInterest && <div><span className="text-muted-foreground text-xs block mb-1">Package Interest</span><span>{selectedChild.packageInterest}</span></div>}
+                  {selectedChild.lostReason && <div><span className="text-muted-foreground text-xs block mb-1">Lost Reason</span><span>{selectedChild.lostReason}</span></div>}
                 </div>
 
-                {/* Children */}
+                {/* Parent Info */}
                 <div className="border-t border-border pt-4">
-                  <h3 className="text-sm font-semibold mb-2">Children ({currentLead.children.length})</h3>
-                  <div className="space-y-2">
-                    {currentLead.children.map((child, i) => (
-                      <div key={i} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
-                        <span className="text-sm font-medium">{child.name}</span>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span>Age {child.age}</span>
-                          <span>{child.level}</span>
+                  <h3 className="text-sm font-semibold mb-2">Parent Details</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><span className="text-muted-foreground text-xs block mb-1">Name</span><span className="font-medium">{selectedChild.parent.name}</span></div>
+                    <div><span className="text-muted-foreground text-xs block mb-1">Phone</span><span>{selectedChild.parent.phone}</span></div>
+                    <div><span className="text-muted-foreground text-xs block mb-1">Country</span><span>{countryFlags[selectedChild.parent.country] || "🌍"} {selectedChild.parent.country}</span></div>
+                    <div><span className="text-muted-foreground text-xs block mb-1">Channel</span><ChannelIcon channel={selectedChild.parent.channel} /></div>
+                    <div><span className="text-muted-foreground text-xs block mb-1">Source</span><span>{selectedChild.parent.source}</span></div>
+                    <div><span className="text-muted-foreground text-xs block mb-1">Assigned To</span><span>{selectedChild.parent.assignedTo}</span></div>
+                  </div>
+                </div>
+
+                {/* Siblings */}
+                {selectedChild.parent.children.length > 1 && (
+                  <div className="border-t border-border pt-4">
+                    <h3 className="text-sm font-semibold mb-2">Siblings</h3>
+                    <div className="space-y-2">
+                      {selectedChild.parent.children.filter(c => c.id !== selectedChild.id).map((sib, i) => (
+                        <div key={i} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                          <div>
+                            <span className="text-[11px] text-muted-foreground font-mono mr-1.5">{sib.id}</span>
+                            <span className="text-sm font-medium">{sib.name}</span>
+                            <span className="text-xs text-muted-foreground ml-2">Age {sib.age}</span>
+                          </div>
+                          <StatusBadge variant={statusVariantMap[sib.status] as any} className="text-[10px]">{sib.status}</StatusBadge>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Status & AI */}
-                <div className="grid grid-cols-2 gap-4 text-sm border-t border-border pt-4">
-                  <div>
-                    <span className="text-muted-foreground text-xs block mb-1">Status</span>
-                    <Select defaultValue={currentLead.status}>
-                      <SelectTrigger className="w-full h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "ENROLLED", "LOST", "COLD"].map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground text-xs block mb-1">AI Agent</span>
-                    <AIStatusBadge status={currentLead.aiAgent} />
-                  </div>
-                </div>
-
-                {/* Package Interest (if applicable) */}
-                {(currentLead.status === "TRIAL ATTENDED" || currentLead.status === "ENROLLED") && currentLead.packageInterest && (
-                  <div className="border-t border-border pt-4 text-sm">
-                    <span className="text-muted-foreground text-xs block mb-1">Package Interest</span>
-                    <span className="font-medium">{currentLead.packageInterest}</span>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -654,8 +594,8 @@ export default function LeadsPage() {
                 <div className="border-t border-border pt-4">
                   <h3 className="text-sm font-semibold mb-3">Notes</h3>
                   <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
-                    {getNotesForLead(currentLead).length === 0 && <p className="text-xs text-muted-foreground">No notes yet</p>}
-                    {getNotesForLead(currentLead).map((note, i) => (
+                    {selectedChild.parent.notes.length === 0 && <p className="text-xs text-muted-foreground">No notes yet</p>}
+                    {selectedChild.parent.notes.map((note, i) => (
                       <div key={i} className="bg-muted/50 rounded-lg p-3">
                         <p className="text-sm">{note.text}</p>
                         <p className="text-[11px] text-muted-foreground mt-1">{note.time}</p>
@@ -668,9 +608,9 @@ export default function LeadsPage() {
                       placeholder="Add a note..."
                       value={noteText}
                       onChange={(e) => setNoteText(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addNote()}
+                      onKeyDown={(e) => e.key === "Enter" && setNoteText("")}
                     />
-                    <button onClick={addNote} className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Add</button>
+                    <button onClick={() => setNoteText("")} className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Add</button>
                   </div>
                 </div>
               </div>
@@ -679,26 +619,7 @@ export default function LeadsPage() {
               <div className="border-t border-border px-6 py-4 space-y-2">
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Mark Trial Booked</button>
-                  <button onClick={() => handleMarkAsLost(currentLead)} className="flex-1 px-4 py-2.5 border border-destructive text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10">Mark as Lost</button>
-                </div>
-                <div className="flex gap-2">
-                  {currentLead.aiAgent === "active" && (
-                    <button className="flex-1 px-4 py-2.5 border border-purple-500 text-purple-600 dark:text-purple-400 rounded-lg text-sm font-medium hover:bg-purple-500/10">Take Over from AI</button>
-                  )}
-                  {currentLead.status === "ENROLLED" && (
-                    <button
-                      disabled={currentLead.handedOff}
-                      onClick={() => setHandoffOpen(true)}
-                      className={cn(
-                        "flex-1 px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5",
-                        currentLead.handedOff
-                          ? "bg-muted text-muted-foreground cursor-not-allowed"
-                          : "bg-success text-success-foreground hover:bg-success/90"
-                      )}
-                    >
-                      <ArrowRight size={14} /> {currentLead.handedOff ? "Handed Off ✓" : "Hand off to Ops"}
-                    </button>
-                  )}
+                  <button onClick={() => handleMarkAsLost(selectedChild)} className="flex-1 px-4 py-2.5 border border-destructive text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10">Mark as Lost</button>
                 </div>
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2.5 border border-success text-success rounded-lg text-sm font-medium hover:bg-success/10 flex items-center justify-center gap-1.5">
@@ -779,22 +700,6 @@ export default function LeadsPage() {
           <DialogFooter>
             <button onClick={() => setReengageOpen(false)} className="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted">Cancel</button>
             <button onClick={confirmReengage} disabled={!reengageDate} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50">Set Reminder</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Handoff Confirmation Modal */}
-      <Dialog open={handoffOpen} onOpenChange={setHandoffOpen}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>Confirm Handoff to Ops</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground py-2">
-            Confirm handoff to Enrolled Admin? This will notify the CSO Groupchat on Slack.
-          </p>
-          <DialogFooter>
-            <button onClick={() => setHandoffOpen(false)} className="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted">Cancel</button>
-            <button onClick={handleHandoff} className="px-4 py-2 bg-success text-success-foreground rounded-lg text-sm font-medium hover:bg-success/90">Confirm Handoff</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

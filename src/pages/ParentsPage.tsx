@@ -45,7 +45,7 @@ function ChildStatusSummary({ children }: { children: Child[] }) {
 const tabs = [
   { label: "All", count: parents.length },
   { label: "Has Leads", count: parents.filter(p => p.children.some(c => ["INQUIRY", "LEAD"].includes(c.status))).length },
-  { label: "Has Trials", count: parents.filter(p => p.children.some(c => ["TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW"].includes(c.status))).length },
+  { label: "Has Trials", count: parents.filter(p => p.children.some(c => ["TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL"].includes(c.status))).length },
   { label: "Has Enrolled", count: parents.filter(p => p.children.some(c => c.status === "ENROLLED")).length },
   { label: "Has Lost/Cold", count: parents.filter(p => p.children.some(c => ["LOST", "COLD"].includes(c.status))).length },
 ];

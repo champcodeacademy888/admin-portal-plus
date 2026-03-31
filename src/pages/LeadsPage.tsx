@@ -3,10 +3,11 @@ import PageHeader from "@/components/PageHeader";
 import FilterTabs from "@/components/FilterTabs";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, MessageCircle, Eye, MoreHorizontal, X, Phone, SlidersHorizontal, AlertTriangle, Calendar, ArrowRight, Download, Users, TrendingUp } from "lucide-react";
+import { Search, MessageCircle, Eye, MoreHorizontal, X, Phone, SlidersHorizontal, AlertTriangle, Calendar, ArrowRight, Download, Users, TrendingUp, LayoutGrid, List, Columns3 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -121,6 +122,56 @@ function ConversionStatsBar() {
   );
 }
 
+const kanbanStatuses: LeadStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "ENROLLED", "LOST", "COLD"];
+const kanbanColors: Record<string, string> = {
+  "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
+  "TRIAL ATTENDED": "border-t-purple-500", "NO SHOW": "border-t-destructive", "ENROLLED": "border-t-success",
+  "LOST": "border-t-muted-foreground", "COLD": "border-t-muted-foreground",
+};
+
+function KanbanView({ leads: kanbanLeads, onLeadClick }: { leads: Lead[]; onLeadClick: (lead: Lead) => void }) {
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-4">
+      {kanbanStatuses.map((status) => {
+        const statusLeads = kanbanLeads.filter(l => l.status === status);
+        return (
+          <div key={status} className="min-w-[220px] w-[220px] shrink-0">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{status}</h3>
+              <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{statusLeads.length}</span>
+            </div>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {statusLeads.length === 0 && (
+                <div className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">No leads</div>
+              )}
+              {statusLeads.slice(0, 50).map((lead, i) => (
+                <div
+                  key={i}
+                  onClick={() => onLeadClick(lead)}
+                  className={cn(
+                    "rounded-lg border border-border bg-card p-3 cursor-pointer hover:shadow-md transition-shadow border-t-[3px]",
+                    kanbanColors[status] || "border-t-border"
+                  )}
+                >
+                  <p className="text-sm font-medium truncate">{lead.name}</p>
+                  <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+                    <span>{countryFlags[lead.country] || "🌍"}</span>
+                    <span>{lead.channel}</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
+                    <span>{lead.lastContacted}</span>
+                    <span>{lead.assignedTo}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function LeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
@@ -134,6 +185,36 @@ export default function LeadsPage() {
   const [countryFilter, setCountryFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
+    "name", "status", "country", "channel", "lastContacted", "aiAgent", "assignedTo", "actions"
+  ]));
+  const [columnsOpen, setColumnsOpen] = useState(false);
+
+  const allColumnKeys = [
+    { key: "name", label: "Parent Name" },
+    { key: "status", label: "Status" },
+    { key: "country", label: "Country" },
+    { key: "channel", label: "Channel" },
+    { key: "lastContacted", label: "Last Contacted" },
+    { key: "aiAgent", label: "AI Agent" },
+    { key: "assignedTo", label: "Assigned To" },
+    { key: "trialDate", label: "Trial Date" },
+    { key: "packageInterest", label: "Package Interest" },
+    { key: "lastNote", label: "Last Note" },
+    { key: "age", label: "Age" },
+    { key: "level", label: "Level" },
+    { key: "actions", label: "Actions" },
+  ];
+
+  const toggleColumn = (key: string) => {
+    setVisibleColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   // Lost reason modal
   const [lostReasonOpen, setLostReasonOpen] = useState(false);
@@ -332,6 +413,8 @@ export default function LeadsPage() {
     },
   ];
 
+  const filteredColumns = columns.filter(col => visibleColumns.has(col.key));
+
   const tabEmptyMessages: Record<string, string> = {
     "Needs Attention": "No leads need attention right now 🎉",
     "Inquiry": "No inquiries at this stage",
@@ -387,6 +470,36 @@ export default function LeadsPage() {
               </div>
             </PopoverContent>
           </Popover>
+          <Popover open={columnsOpen} onOpenChange={setColumnsOpen}>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">
+                <Columns3 size={14} /> Columns
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52" align="end">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Toggle columns</p>
+                {allColumnKeys.map((col) => (
+                  <label key={col.key} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm">
+                    <Checkbox checked={visibleColumns.has(col.key)} onCheckedChange={() => toggleColumn(col.key)} />
+                    {col.label}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <div className="flex items-center border border-border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode("table")}
+              className={cn("px-2.5 py-2 transition-colors", viewMode === "table" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground")}
+              title="Table view"
+            ><List size={15} /></button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={cn("px-2.5 py-2 transition-colors", viewMode === "kanban" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground")}
+              title="Board view"
+            ><LayoutGrid size={15} /></button>
+          </div>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -403,24 +516,28 @@ export default function LeadsPage() {
 
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); setCurrentPage(1); }} />
 
-      <DataTable
-        columns={columns as any}
-        data={paginatedLeads as any}
-        totalItems={filteredLeads.length}
-        currentPage={viewAll ? 1 : currentPage}
-        totalPages={viewAll ? 1 : totalPages}
-        onPageChange={handlePageChange}
-        viewingAll={viewAll}
-        onRowClick={(row) => openPanel(row as unknown as Lead)}
-        rowClassName={(row) => {
-          const r = row as unknown as Lead;
-          return isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : "";
-        }}
-        emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
-        selectable
-        selectedIndices={selectedIndices}
-        onSelectionChange={setSelectedIndices}
-      />
+      {viewMode === "table" ? (
+        <DataTable
+          columns={filteredColumns as any}
+          data={paginatedLeads as any}
+          totalItems={filteredLeads.length}
+          currentPage={viewAll ? 1 : currentPage}
+          totalPages={viewAll ? 1 : totalPages}
+          onPageChange={handlePageChange}
+          viewingAll={viewAll}
+          onRowClick={(row) => openPanel(row as unknown as Lead)}
+          rowClassName={(row) => {
+            const r = row as unknown as Lead;
+            return isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : "";
+          }}
+          emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
+          selectable
+          selectedIndices={selectedIndices}
+          onSelectionChange={setSelectedIndices}
+        />
+      ) : (
+        <KanbanView leads={filteredLeads} onLeadClick={openPanel} />
+      )}
 
       {/* Bulk Action Bar */}
       {selectedIndices.size > 0 && (

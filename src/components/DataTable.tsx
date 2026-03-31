@@ -42,15 +42,30 @@ export default function DataTable<T extends Record<string, unknown>>({
           </tr>
         </thead>
         <tbody className="divide-y divide-table-border">
-          {data.map((row, i) => (
-            <tr key={i} className="hover:bg-table-row-hover transition-colors">
-              {columns.map((col) => (
-                <td key={col.key} className={`px-6 py-3.5 text-sm text-foreground ${col.className || ""}`}>
-                  {col.render ? col.render(row) : (row[col.key] as React.ReactNode) ?? "—"}
-                </td>
-              ))}
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length} className="px-6 py-16 text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-2xl">📋</div>
+                  <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+                </div>
+              </td>
             </tr>
-          ))}
+          ) : (
+            data.map((row, i) => (
+              <tr
+                key={i}
+                onClick={() => onRowClick?.(row, i)}
+                className={`hover:bg-table-row-hover transition-colors ${onRowClick ? "cursor-pointer" : ""} ${rowClassName?.(row) || ""}`}
+              >
+                {columns.map((col) => (
+                  <td key={col.key} className={`px-6 py-3.5 text-sm text-foreground ${col.className || ""}`}>
+                    {col.render ? col.render(row) : (row[col.key] as React.ReactNode) ?? "—"}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
       <div className="flex items-center justify-center gap-4 py-3 border-t border-border text-sm text-muted-foreground">

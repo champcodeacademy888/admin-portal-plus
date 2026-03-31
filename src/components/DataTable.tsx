@@ -22,6 +22,9 @@ export default function DataTable<T extends Record<string, unknown>>({
   totalItems,
   currentPage = 1,
   totalPages = 1,
+  onRowClick,
+  rowClassName,
+  emptyMessage = "No data found",
 }: DataTableProps<T>) {
   return (
     <div className="border border-border rounded-lg overflow-hidden">

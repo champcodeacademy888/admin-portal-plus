@@ -47,7 +47,7 @@ const tabs = [
   { label: "Has Leads", count: parents.filter(p => p.children.some(c => ["INQUIRY", "LEAD"].includes(c.status))).length },
   { label: "Has Trials", count: parents.filter(p => p.children.some(c => ["TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL"].includes(c.status))).length },
   { label: "Has Enrolled", count: parents.filter(p => p.children.some(c => c.status === "ENROLLED" || c.status === "CLOSED WON")).length },
-  { label: "Has Lost/Cold", count: parents.filter(p => p.children.some(c => ["LOST", "COLD"].includes(c.status))).length },
+  { label: "Has Lost", count: parents.filter(p => p.children.some(c => c.status === "LOST")).length },
 ];
 
 const tabFilters: Record<string, (p: Parent) => boolean> = {

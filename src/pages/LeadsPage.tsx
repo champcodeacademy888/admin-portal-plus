@@ -196,7 +196,7 @@ export default function LeadsPage() {
   const [columnsOpen, setColumnsOpen] = useState(false);
 
   const allColumnKeys = [
-    { key: "name", label: "Parent Name" },
+    { key: "name", label: "Lead" },
     { key: "status", label: "Status" },
     { key: "country", label: "Country" },
     { key: "channel", label: "Channel" },

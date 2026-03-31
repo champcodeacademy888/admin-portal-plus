@@ -52,7 +52,7 @@ const tabs = [
 const statusFilterMap: Record<string, string> = {
   "Inquiry": "INQUIRY", "Lead": "LEAD", "Trial Arranged": "TRIAL ARRANGED",
   "Trial Done": "TRIAL DONE", "Missed Trial": "MISSED TRIAL", "Closed Won": "CLOSED WON",
-  "Lost": "LOST", "Cold": "COLD",
+  "Lost": "LOST",
 };
 
 function ChannelIcon({ channel }: { channel: string }) {

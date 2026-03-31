@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AdminLayout from "@/components/AdminLayout";
 import DashboardPage from "./pages/DashboardPage";
 import LeadsPage from "./pages/LeadsPage";
-import TrialsPage from "./pages/TrialsPage";
+import ParentsPage from "./pages/ParentsPage";
 import EnrolmentsPage from "./pages/EnrolmentsPage";
 import StudentsPage from "./pages/StudentsPage";
 import PackagesPage from "./pages/PackagesPage";

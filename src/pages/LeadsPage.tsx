@@ -121,11 +121,11 @@ function ConversionStatsBar() {
   );
 }
 
-const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST", "COLD"];
+const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST"];
 const kanbanColors: Record<string, string> = {
   "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
   "TRIAL DONE": "border-t-purple-500", "MISSED TRIAL": "border-t-destructive",
-  "CLOSED WON": "border-t-success", "LOST": "border-t-muted-foreground", "COLD": "border-t-muted-foreground",
+  "CLOSED WON": "border-t-success", "LOST": "border-t-muted-foreground",
 };
 
 function KanbanView({ leads, onLeadClick }: { leads: ChildWithParent[]; onLeadClick: (lead: ChildWithParent) => void }) {

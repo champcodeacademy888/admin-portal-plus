@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, ClipboardList, UserPlus, GraduationCap,
   CalendarCheck, RefreshCw, ArrowLeftRight, Calendar, Monitor,
-  BarChart3, PieChart, Globe, LogOut, ChevronDown
+  BarChart3, PieChart, Globe, LogOut, ChevronDown, Package
 } from "lucide-react";
 
 const menuItems = [
@@ -10,6 +10,7 @@ const menuItems = [
   { label: "Leads", icon: Users, path: "/leads" },
   { label: "Trials", icon: ClipboardList, path: "/trials" },
   { label: "Enrolments", icon: UserPlus, path: "/enrolments" },
+  { label: "Packages", icon: Package, path: "/packages" },
   { label: "Students", icon: GraduationCap, path: "/students" },
   { label: "Attendance", icon: CalendarCheck, path: "/attendance" },
   { label: "Makeups", icon: RefreshCw, path: "/makeups" },

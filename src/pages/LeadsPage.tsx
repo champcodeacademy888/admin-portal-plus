@@ -395,14 +395,15 @@ export default function LeadsPage() {
 
       <ConversionStatsBar />
 
-      <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); }} />
+      <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); setCurrentPage(1); }} />
 
       <DataTable
         columns={columns as any}
-        data={filteredLeads as any}
+        data={paginatedLeads as any}
         totalItems={filteredLeads.length}
-        currentPage={1}
-        totalPages={Math.max(1, Math.ceil(filteredLeads.length / 10))}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
         onRowClick={(row) => openPanel(row as unknown as Lead)}
         rowClassName={(row) => {
           const r = row as unknown as Lead;

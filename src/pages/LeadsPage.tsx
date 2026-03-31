@@ -609,10 +609,21 @@ export default function LeadsPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Source</span><span>{currentLead.source}</span></div>
                 </div>
 
-                {/* Child Info */}
-                <div className="grid grid-cols-2 gap-4 text-sm border-t border-border pt-4">
-                  <div><span className="text-muted-foreground text-xs block mb-1">Child Age</span><span className="font-medium">{currentLead.age}</span></div>
-                  <div><span className="text-muted-foreground text-xs block mb-1">Level</span><span>{currentLead.level}</span></div>
+                {/* Children */}
+                <div className="border-t border-border pt-4">
+                  <h3 className="text-sm font-semibold mb-2">Children ({currentLead.children.length})</h3>
+                  <div className="space-y-2">
+                    {currentLead.children.map((child, i) => (
+                      <div key={i} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                        <span className="text-sm font-medium">{child.name}</span>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>Age {child.age}</span>
+                          <span>{child.level}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 </div>
 
                 {/* Status & AI */}

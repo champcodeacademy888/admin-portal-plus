@@ -597,7 +597,6 @@ export default function LeadsPage() {
                   <SheetTitle className="text-lg">{currentLead.name}</SheetTitle>
                 </div>
               </SheetHeader>
-              </SheetHeader>
 
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
                 {/* Contact Info */}
@@ -622,7 +621,6 @@ export default function LeadsPage() {
                       </div>
                     ))}
                   </div>
-                </div>
                 </div>
 
                 {/* Status & AI */}

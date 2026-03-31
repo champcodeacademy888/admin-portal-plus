@@ -36,7 +36,7 @@ const needsAttention = (c: ChildWithParent) =>
 const needsAttentionCount = allLeadChildren.filter(needsAttention).length;
 
 const statusVariantMap: Record<string, string> = {
-  "LEAD": "lead", "TRIAL ATTENDED": "trial_attended", "NO SHOW": "noshow",
+  "LEAD": "lead", "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow",
   "ENROLLED": "enrolled", "LOST": "lost", "COLD": "cold",
   "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry",
 };
@@ -45,13 +45,13 @@ const tabs = [
   { label: "All", count: allLeadChildren.length },
   { label: "Needs Attention", badgeCount: needsAttentionCount, badgeColor: "bg-destructive" },
   { label: "Inquiry" }, { label: "Lead" }, { label: "Trial Arranged" },
-  { label: "Trial Attended" }, { label: "No Show" },
+  { label: "Trial Done" }, { label: "Missed Trial" },
   { label: "Lost" }, { label: "Cold" },
 ];
 
 const statusFilterMap: Record<string, string> = {
   "Inquiry": "INQUIRY", "Lead": "LEAD", "Trial Arranged": "TRIAL ARRANGED",
-  "Trial Attended": "TRIAL ATTENDED", "No Show": "NO SHOW",
+  "Trial Done": "TRIAL DONE", "Missed Trial": "MISSED TRIAL",
   "Lost": "LOST", "Cold": "COLD",
 };
 

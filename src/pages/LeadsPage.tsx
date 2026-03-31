@@ -233,8 +233,8 @@ export default function LeadsPage() {
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={setActiveTab} />
 
       <DataTable
-        columns={columns}
-        data={filteredLeads as unknown as Record<string, unknown>[]}
+        columns={columns as any}
+        data={filteredLeads as any}
         totalItems={filteredLeads.length}
         currentPage={1}
         totalPages={Math.max(1, Math.ceil(filteredLeads.length / 10))}

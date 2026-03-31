@@ -592,8 +592,11 @@ export default function LeadsPage() {
           {currentLead && (
             <div className="flex flex-col h-full">
               <SheetHeader className="px-6 py-5 border-b border-border">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-mono">{currentLead.id}</span>
                   <SheetTitle className="text-lg">{currentLead.name}</SheetTitle>
+                </div>
+              </SheetHeader>
                 </div>
               </SheetHeader>
 

@@ -17,6 +17,7 @@ interface DataTableProps<T> {
   onPageChange?: (page: number) => void;
   rowClassName?: (row: T) => string;
   emptyMessage?: string;
+  viewingAll?: boolean;
   selectable?: boolean;
   selectedIndices?: Set<number>;
   onSelectionChange?: (indices: Set<number>) => void;
@@ -32,6 +33,7 @@ export default function DataTable<T extends Record<string, unknown>>({
   onPageChange,
   rowClassName,
   emptyMessage = "No data found",
+  viewingAll = false,
   selectable = false,
   selectedIndices,
   onSelectionChange,
@@ -110,9 +112,14 @@ export default function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
       <div className="flex items-center justify-center gap-4 py-3 border-t border-border text-sm text-muted-foreground">
-        <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>Previous</button>
-        <span>Page {currentPage} of {totalPages} · {totalItems ?? data.length} total</span>
-        <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => onPageChange?.(currentPage + 1)}>Next</button>
+        {!viewingAll && <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>Previous</button>}
+        <span>{viewingAll ? `Showing all ${totalItems ?? data.length} results` : `Page ${currentPage} of ${totalPages} · ${totalItems ?? data.length} total`}</span>
+        {!viewingAll && <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => onPageChange?.(currentPage + 1)}>Next</button>}
+        {(totalItems ?? data.length) > 20 && (
+          <button className="ml-2 text-xs hover:text-foreground underline underline-offset-2" onClick={() => onPageChange?.(viewingAll ? 1 : 0)}>
+            {viewingAll ? "Paginate" : "View All"}
+          </button>
+        )}
       </div>
     </div>
   );

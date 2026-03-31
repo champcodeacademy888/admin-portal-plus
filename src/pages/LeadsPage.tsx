@@ -324,7 +324,7 @@ export default function LeadsPage() {
       key: "status", header: "Status", render: (r: ChildWithParent) => (
         <div className="flex items-center gap-1 flex-wrap">
           <StatusBadge variant={statusVariantMap[r.status] as any}>{r.status}</StatusBadge>
-          {r.status === "TRIAL ATTENDED" && r.hoursSinceTrial !== undefined && <FollowUpBadge hoursSinceTrial={r.hoursSinceTrial} />}
+          {r.status === "TRIAL DONE" && r.hoursSinceTrial !== undefined && <FollowUpBadge hoursSinceTrial={r.hoursSinceTrial} />}
         </div>
       ),
     },

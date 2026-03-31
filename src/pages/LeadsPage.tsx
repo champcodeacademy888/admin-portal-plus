@@ -21,7 +21,7 @@ const todayStr = todayFormatted;
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
 // Lead statuses (pre-enrollment pipeline)
-const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST", "COLD"];
+const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST"];
 
 // Get all children in lead pipeline stages
 const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.status));

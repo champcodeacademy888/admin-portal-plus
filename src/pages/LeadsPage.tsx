@@ -348,7 +348,7 @@ export default function LeadsPage() {
     },
     {
       key: "packageInterest", header: "Package Interest", render: (r: ChildWithParent) => {
-        if (r.status !== "TRIAL ATTENDED") return <span className="text-muted-foreground">—</span>;
+        if (r.status !== "TRIAL DONE") return <span className="text-muted-foreground">—</span>;
         return <span>{r.packageInterest || "—"}</span>;
       },
     },

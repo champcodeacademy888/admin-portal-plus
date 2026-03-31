@@ -153,7 +153,11 @@ function KanbanView({ leads: kanbanLeads, onLeadClick }: { leads: Lead[]; onLead
                     kanbanColors[status] || "border-t-border"
                   )}
                 >
-                  <p className="text-sm font-medium truncate">{lead.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground font-mono">{lead.id}</span>
+                    <p className="text-sm font-medium truncate">{lead.name}</p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{lead.children.map(c => c.name).join(", ")}</p>
                   <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
                     <span>{countryFlags[lead.country] || "🌍"}</span>
                     <span>{lead.channel}</span>

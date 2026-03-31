@@ -168,8 +168,14 @@ export default function LeadsPage() {
     return true;
   });
 
+  const viewAll = currentPage === 0;
   const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
-  const paginatedLeads = filteredLeads.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedLeads = viewAll ? filteredLeads : filteredLeads.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handlePageChange = (page: number) => {
+    if (page === 0) setCurrentPage(0);
+    else setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   const openPanel = (lead: Lead) => {
     setSelectedLead(lead);

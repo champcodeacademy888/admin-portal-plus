@@ -124,6 +124,7 @@ function ConversionStatsBar() {
 export default function LeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
+  const [activeTab, setActiveTab] = useState(0);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [noteText, setNoteText] = useState("");

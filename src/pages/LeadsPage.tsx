@@ -365,7 +365,7 @@ export default function LeadsPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleMarkAsLost(r)}>Mark as Lost</DropdownMenuItem>
-              {(r.status === "LOST" || r.status === "COLD") && (
+              {r.status === "LOST" && (
                 <DropdownMenuItem onClick={() => handleReengage(r)}>
                   <Calendar size={14} className="mr-2" /> Schedule Re-engagement
                 </DropdownMenuItem>

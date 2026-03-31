@@ -3,8 +3,16 @@ import { format } from "date-fns";
 type AIStatus = "active" | "admin" | "completed";
 type LeadStatus = "LEAD" | "TRIAL ATTENDED" | "NO SHOW" | "ENROLLED" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
 
-export interface Lead {
+export interface Child {
   name: string;
+  age: number;
+  level: string;
+}
+
+export interface Lead {
+  id: string;
+  name: string;
+  children: Child[];
   status: LeadStatus;
   country: string;
   channel: "WhatsApp" | "Messenger";

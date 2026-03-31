@@ -46,7 +46,7 @@ const tabs = [
   { label: "Needs Attention", badgeCount: needsAttentionCount, badgeColor: "bg-destructive" },
   { label: "Inquiry" }, { label: "Lead" }, { label: "Trial Arranged" },
   { label: "Trial Done" }, { label: "Missed Trial" }, { label: "Closed Won" },
-  { label: "Lost" }, { label: "Cold" },
+  { label: "Lost" },
 ];
 
 const statusFilterMap: Record<string, string> = {

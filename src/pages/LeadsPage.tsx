@@ -95,7 +95,7 @@ function ConversionStatsBar() {
 
   const inquiryToLead = inquiries + leadsCount > 0 ? Math.round((leadsCount / (inquiries + leadsCount)) * 100) : 0;
   const leadToTrial = leadsCount + trialArranged > 0 ? Math.round((trialArranged / (leadsCount + trialArranged)) * 100) : 0;
-  const trialToEnrolled = trialAttended + enrolled > 0 ? Math.round((enrolled / (trialAttended + enrolled)) * 100) : 0;
+  const trialToEnrolled = trialDone + enrolled > 0 ? Math.round((enrolled / (trialDone + enrolled)) * 100) : 0;
 
   const stats = [
     { label: "Total Leads", value: total, icon: Users },

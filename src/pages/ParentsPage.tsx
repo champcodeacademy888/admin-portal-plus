@@ -53,7 +53,7 @@ const tabs = [
 const tabFilters: Record<string, (p: Parent) => boolean> = {
   "All": () => true,
   "Has Leads": p => p.children.some(c => ["INQUIRY", "LEAD"].includes(c.status)),
-  "Has Trials": p => p.children.some(c => ["TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW"].includes(c.status)),
+  "Has Trials": p => p.children.some(c => ["TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL"].includes(c.status)),
   "Has Enrolled": p => p.children.some(c => c.status === "ENROLLED"),
   "Has Lost/Cold": p => p.children.some(c => ["LOST", "COLD"].includes(c.status)),
 };

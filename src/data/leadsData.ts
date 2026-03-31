@@ -165,7 +165,7 @@ function generateLeads(): Lead[] {
       lead.trialOutcomeMarked = dayOffset < 0 ? rand() > 0.5 : false;
     }
 
-    if (status === "TRIAL ATTENDED") {
+    if (status === "TRIAL DONE") {
       lead.hoursSinceTrial = randInt(2, 96);
       lead.packageInterest = pick(packageInterests);
     }

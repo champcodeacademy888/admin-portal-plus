@@ -2,6 +2,8 @@ interface FilterTab {
   label: string;
   count?: number;
   active?: boolean;
+  badgeCount?: number;
+  badgeColor?: string;
 }
 
 interface FilterTabsProps {

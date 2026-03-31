@@ -336,15 +336,23 @@ export default function LeadsPage() {
 
   const columns = [
     {
-      key: "name", header: "Parent Name", render: (r: Lead) => (
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium">{r.name}</span>
-          {r.reengagementDate && (
-            <span className="text-primary" title={`Re-engagement: ${format(new Date(r.reengagementDate), "d MMM yyyy")}`}>
-              <Calendar size={13} />
-            </span>
-          )}
-          {r.handedOff && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-success/15 text-success">Handed Off</span>}
+      key: "name", header: "Lead", render: (r: Lead) => (
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
+            <span className="font-medium">{r.name}</span>
+            {r.reengagementDate && (
+              <span className="text-primary" title={`Re-engagement: ${format(new Date(r.reengagementDate), "d MMM yyyy")}`}>
+                <Calendar size={13} />
+              </span>
+            )}
+            {r.handedOff && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-success/15 text-success">Handed Off</span>}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            {r.children.map((c, i) => (
+              <span key={i}>{i > 0 && " · "}{c.name} ({c.age}y)</span>
+            ))}
+          </div>
         </div>
       ),
     },

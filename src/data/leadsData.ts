@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 
 type AIStatus = "active" | "admin" | "completed";
-type LeadStatus = "LEAD" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
+type LeadStatus = "LEAD" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "CLOSED WON" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
 
 export interface Child {
   name: string;

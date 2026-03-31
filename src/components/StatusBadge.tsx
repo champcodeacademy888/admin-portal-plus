@@ -21,6 +21,7 @@ const badgeVariants = cva(
         lost: "bg-muted text-muted-foreground",
         cold: "bg-muted text-muted-foreground",
         trial_attended: "bg-success/15 text-success",
+        closed_won: "bg-success/15 text-success",
         trial_arranged: "bg-info/15 text-info",
         return: "bg-info/15 text-info",
         makeup: "bg-warning/15 text-warning",

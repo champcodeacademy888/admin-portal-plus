@@ -65,8 +65,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-3 px-3">
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">SA</div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-foreground">sales01</div>
-              <div className="text-xs text-sidebar-muted">Sales</div>
+             <div className="text-sm font-medium text-foreground truncate">Sarah Anderson</div>
+              <div className="text-xs text-sidebar-muted">Sales Admin</div>
             </div>
             <LogOut size={16} className="text-sidebar-muted" />
           </div>
@@ -75,10 +75,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 border-b border-border flex items-center justify-between px-8">
-          <span className="text-sm text-foreground">
-            Good morning, <strong>sales01</strong>.
-          </span>
+         <header className="h-14 border-b border-border flex items-center justify-between px-8">
+           <span className="text-sm text-foreground">
+             Good morning, <strong>Sarah Anderson</strong>.
+           </span>
           <button className="flex items-center gap-2 text-sm text-foreground">
             <Globe size={16} />
             All Countries

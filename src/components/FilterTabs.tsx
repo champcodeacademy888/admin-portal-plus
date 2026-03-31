@@ -2,6 +2,8 @@ interface FilterTab {
   label: string;
   count?: number;
   active?: boolean;
+  badgeCount?: number;
+  badgeColor?: string;
 }
 
 interface FilterTabsProps {
@@ -24,6 +26,11 @@ export default function FilterTabs({ tabs, activeIndex, onChange }: FilterTabsPr
           }`}
         >
           {tab.label}{tab.count !== undefined ? ` ${tab.count}` : ""}
+          {tab.badgeCount !== undefined && (
+            <span className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1 text-[10px] font-bold text-white ${tab.badgeColor || "bg-destructive"}`}>
+              {tab.badgeCount}
+            </span>
+          )}
         </button>
       ))}
     </div>

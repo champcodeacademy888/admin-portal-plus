@@ -33,6 +33,7 @@ export default function DataTable<T extends Record<string, unknown>>({
   onPageChange,
   rowClassName,
   emptyMessage = "No data found",
+  viewingAll = false,
   selectable = false,
   selectedIndices,
   onSelectionChange,

@@ -363,6 +363,8 @@ export default function LeadsPage() {
     },
   ];
 
+  const filteredColumns = columns.filter(col => visibleColumns.has(col.key));
+
   const tabEmptyMessages: Record<string, string> = {
     "Needs Attention": "No leads need attention right now 🎉",
     "Inquiry": "No inquiries at this stage",

@@ -37,7 +37,7 @@ const needsAttentionCount = allLeadChildren.filter(needsAttention).length;
 
 const statusVariantMap: Record<string, string> = {
   "LEAD": "lead", "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow",
-  "ENROLLED": "enrolled", "LOST": "lost", "COLD": "cold",
+  "ENROLLED": "enrolled", "CLOSED WON": "enrolled", "LOST": "lost", "COLD": "cold",
   "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry",
 };
 

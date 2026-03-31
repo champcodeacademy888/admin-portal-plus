@@ -28,8 +28,8 @@ const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.sta
 
 const needsAttention = (c: ChildWithParent) =>
   (c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 20) ||
-  (c.status === "TRIAL ATTENDED" && (c.hoursSinceTrial ?? c.parent.lastContactedHrs) >= 24) ||
-  (c.status === "NO SHOW") ||
+  (c.status === "TRIAL DONE" && (c.hoursSinceTrial ?? c.parent.lastContactedHrs) >= 24) ||
+  (c.status === "MISSED TRIAL") ||
   (c.status === "TRIAL ARRANGED" && c.trialPassed && !c.trialOutcomeMarked) ||
   (c.parent.reengagementDate && new Date(c.parent.reengagementDate) <= today);
 

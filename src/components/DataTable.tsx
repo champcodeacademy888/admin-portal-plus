@@ -112,12 +112,12 @@ export default function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
       <div className="flex items-center justify-center gap-4 py-3 border-t border-border text-sm text-muted-foreground">
-        <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>Previous</button>
-        <span>Page {currentPage} of {totalPages} · {totalItems ?? data.length} total</span>
-        <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => onPageChange?.(currentPage + 1)}>Next</button>
-        {totalPages > 1 && (
-          <button className="ml-2 text-xs hover:text-foreground underline underline-offset-2" onClick={() => onPageChange?.(0)}>
-            {currentPage === 0 ? "Paginate" : "View All"}
+        {!viewingAll && <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>Previous</button>}
+        <span>{viewingAll ? `Showing all ${totalItems ?? data.length} results` : `Page ${currentPage} of ${totalPages} · ${totalItems ?? data.length} total`}</span>
+        {!viewingAll && <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => onPageChange?.(currentPage + 1)}>Next</button>}
+        {(totalItems ?? data.length) > 20 && (
+          <button className="ml-2 text-xs hover:text-foreground underline underline-offset-2" onClick={() => onPageChange?.(viewingAll ? 1 : 0)}>
+            {viewingAll ? "Paginate" : "View All"}
           </button>
         )}
       </div>

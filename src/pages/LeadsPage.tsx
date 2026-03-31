@@ -21,22 +21,22 @@ const todayStr = todayFormatted;
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
 // Lead statuses (pre-enrollment pipeline)
-const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "LOST", "COLD"];
+const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "LOST", "COLD"];
 
 // Get all children in lead pipeline stages
 const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.status));
 
 const needsAttention = (c: ChildWithParent) =>
   (c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 20) ||
-  (c.status === "TRIAL ATTENDED" && (c.hoursSinceTrial ?? c.parent.lastContactedHrs) >= 24) ||
-  (c.status === "NO SHOW") ||
+  (c.status === "TRIAL DONE" && (c.hoursSinceTrial ?? c.parent.lastContactedHrs) >= 24) ||
+  (c.status === "MISSED TRIAL") ||
   (c.status === "TRIAL ARRANGED" && c.trialPassed && !c.trialOutcomeMarked) ||
   (c.parent.reengagementDate && new Date(c.parent.reengagementDate) <= today);
 
 const needsAttentionCount = allLeadChildren.filter(needsAttention).length;
 
 const statusVariantMap: Record<string, string> = {
-  "LEAD": "lead", "TRIAL ATTENDED": "trial_attended", "NO SHOW": "noshow",
+  "LEAD": "lead", "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow",
   "ENROLLED": "enrolled", "LOST": "lost", "COLD": "cold",
   "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry",
 };
@@ -45,13 +45,13 @@ const tabs = [
   { label: "All", count: allLeadChildren.length },
   { label: "Needs Attention", badgeCount: needsAttentionCount, badgeColor: "bg-destructive" },
   { label: "Inquiry" }, { label: "Lead" }, { label: "Trial Arranged" },
-  { label: "Trial Attended" }, { label: "No Show" },
+  { label: "Trial Done" }, { label: "Missed Trial" },
   { label: "Lost" }, { label: "Cold" },
 ];
 
 const statusFilterMap: Record<string, string> = {
   "Inquiry": "INQUIRY", "Lead": "LEAD", "Trial Arranged": "TRIAL ARRANGED",
-  "Trial Attended": "TRIAL ATTENDED", "No Show": "NO SHOW",
+  "Trial Done": "TRIAL DONE", "Missed Trial": "MISSED TRIAL",
   "Lost": "LOST", "Cold": "COLD",
 };
 
@@ -89,13 +89,13 @@ function ConversionStatsBar() {
   const inquiries = allLeadChildren.filter(l => l.status === "INQUIRY").length;
   const leadsCount = allLeadChildren.filter(l => l.status === "LEAD").length;
   const trialArranged = allLeadChildren.filter(l => l.status === "TRIAL ARRANGED").length;
-  const trialAttended = allLeadChildren.filter(l => l.status === "TRIAL ATTENDED").length;
+  const trialDone = allLeadChildren.filter(l => l.status === "TRIAL DONE").length;
   // Enrolled children from all parents
   const enrolled = getAllChildren().filter(c => c.status === "ENROLLED").length;
 
   const inquiryToLead = inquiries + leadsCount > 0 ? Math.round((leadsCount / (inquiries + leadsCount)) * 100) : 0;
   const leadToTrial = leadsCount + trialArranged > 0 ? Math.round((trialArranged / (leadsCount + trialArranged)) * 100) : 0;
-  const trialToEnrolled = trialAttended + enrolled > 0 ? Math.round((enrolled / (trialAttended + enrolled)) * 100) : 0;
+  const trialToEnrolled = trialDone + enrolled > 0 ? Math.round((enrolled / (trialDone + enrolled)) * 100) : 0;
 
   const stats = [
     { label: "Total Leads", value: total, icon: Users },
@@ -121,10 +121,10 @@ function ConversionStatsBar() {
   );
 }
 
-const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "LOST", "COLD"];
+const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "LOST", "COLD"];
 const kanbanColors: Record<string, string> = {
   "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
-  "TRIAL ATTENDED": "border-t-purple-500", "NO SHOW": "border-t-destructive",
+  "TRIAL DONE": "border-t-purple-500", "MISSED TRIAL": "border-t-destructive",
   "LOST": "border-t-muted-foreground", "COLD": "border-t-muted-foreground",
 };
 
@@ -324,7 +324,7 @@ export default function LeadsPage() {
       key: "status", header: "Status", render: (r: ChildWithParent) => (
         <div className="flex items-center gap-1 flex-wrap">
           <StatusBadge variant={statusVariantMap[r.status] as any}>{r.status}</StatusBadge>
-          {r.status === "TRIAL ATTENDED" && r.hoursSinceTrial !== undefined && <FollowUpBadge hoursSinceTrial={r.hoursSinceTrial} />}
+          {r.status === "TRIAL DONE" && r.hoursSinceTrial !== undefined && <FollowUpBadge hoursSinceTrial={r.hoursSinceTrial} />}
         </div>
       ),
     },
@@ -348,7 +348,7 @@ export default function LeadsPage() {
     },
     {
       key: "packageInterest", header: "Package Interest", render: (r: ChildWithParent) => {
-        if (r.status !== "TRIAL ATTENDED") return <span className="text-muted-foreground">—</span>;
+        if (r.status !== "TRIAL DONE") return <span className="text-muted-foreground">—</span>;
         return <span>{r.packageInterest || "—"}</span>;
       },
     },
@@ -383,7 +383,8 @@ export default function LeadsPage() {
     "Needs Attention": "No leads need attention right now 🎉",
     "Inquiry": "No inquiries at this stage",
     "Trial Arranged": "No trials arranged yet",
-    "Trial Attended": "No trials attended yet",
+    "Trial Done": "No completed trials yet",
+    "Missed Trial": "No missed trials — great!",
     "Lost": "No lost leads — keep it up!",
     "Cold": "No cold leads",
   };

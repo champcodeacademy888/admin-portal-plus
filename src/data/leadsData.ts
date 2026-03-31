@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 
 type AIStatus = "active" | "admin" | "completed";
-type LeadStatus = "LEAD" | "TRIAL ATTENDED" | "NO SHOW" | "ENROLLED" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
+type LeadStatus = "LEAD" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
 
 export interface Child {
   name: string;
@@ -70,7 +70,7 @@ const childFirstNames = [
 const countries = ["Philippines","Singapore","Malaysia","Sri Lanka","UAE","Hong Kong","Indonesia"];
 const channels: ("WhatsApp" | "Messenger")[] = ["WhatsApp","Messenger"];
 const sources = ["Meta Ads (Facebook)","Meta Ads (WhatsApp)","Meta Ads (Form)","Referral","Website","Instagram","Google Ads"];
-const statuses: LeadStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL ATTENDED","NO SHOW","ENROLLED","LOST","COLD"];
+const statuses: LeadStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL DONE","MISSED TRIAL","ENROLLED","LOST","COLD"];
 const aiStatuses: AIStatus[] = ["active","active","admin","completed"];
 const admins = ["Sarah A.","James L.","Maria G.","David K."];
 const levels = ["—","Beginner","Intermediate","Advanced"];
@@ -78,7 +78,7 @@ const packageInterests = ["8 lessons / month","4 lessons / month","Trial only","
 const lostReasons = ["Price","Timing","Chose competitor","Not interested","No response"];
 const noteTexts = [
   "Parent interested in weekend classes","Trial went well, follow up for enrollment",
-  "No show - tried calling twice","Rescheduling pending","Enrolled in 8-lesson package",
+  "Missed trial - tried calling twice","Rescheduling pending","Enrolled in 8-lesson package",
   "Price too high","Wants to start next month","Asked about sibling discount",
   "Prefers weekday mornings","Interested in Minecraft coding","Wants trial before committing",
   "Called and left voicemail","Responded to follow-up","Waiting for school term to end",
@@ -165,7 +165,7 @@ function generateLeads(): Lead[] {
       lead.trialOutcomeMarked = dayOffset < 0 ? rand() > 0.5 : false;
     }
 
-    if (status === "TRIAL ATTENDED") {
+    if (status === "TRIAL DONE") {
       lead.hoursSinceTrial = randInt(2, 96);
       lead.packageInterest = pick(packageInterests);
     }

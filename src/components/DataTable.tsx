@@ -17,6 +17,7 @@ interface DataTableProps<T> {
   onPageChange?: (page: number) => void;
   rowClassName?: (row: T) => string;
   emptyMessage?: string;
+  viewingAll?: boolean;
   selectable?: boolean;
   selectedIndices?: Set<number>;
   onSelectionChange?: (indices: Set<number>) => void;

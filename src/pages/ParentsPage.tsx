@@ -11,7 +11,6 @@ const statusVariantMap: Record<string, string> = {
   "INQUIRY": "inquiry", "LEAD": "lead", "TRIAL ARRANGED": "trial_arranged",
   "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow", "ENROLLED": "enrolled",
   "CLOSED WON": "closed_won", "LOST": "lost", "COLD": "cold",
-  "LOST": "lost", "COLD": "cold",
 };
 
 function ChannelIcon({ channel }: { channel: string }) {

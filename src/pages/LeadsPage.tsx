@@ -407,9 +407,9 @@ export default function LeadsPage() {
         columns={columns as any}
         data={paginatedLeads as any}
         totalItems={filteredLeads.length}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        currentPage={viewAll ? 1 : currentPage}
+        totalPages={viewAll ? 1 : totalPages}
+        onPageChange={handlePageChange}
         onRowClick={(row) => openPanel(row as unknown as Lead)}
         rowClassName={(row) => {
           const r = row as unknown as Lead;

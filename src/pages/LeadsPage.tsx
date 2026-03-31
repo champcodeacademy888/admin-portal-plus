@@ -383,7 +383,8 @@ export default function LeadsPage() {
     "Needs Attention": "No leads need attention right now 🎉",
     "Inquiry": "No inquiries at this stage",
     "Trial Arranged": "No trials arranged yet",
-    "Trial Attended": "No trials attended yet",
+    "Trial Done": "No completed trials yet",
+    "Missed Trial": "No missed trials — great!",
     "Lost": "No lost leads — keep it up!",
     "Cold": "No cold leads",
   };

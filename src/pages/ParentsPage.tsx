@@ -9,7 +9,7 @@ import { parents, countryFlags, type Parent, type Child } from "@/data/parentsDa
 
 const statusVariantMap: Record<string, string> = {
   "INQUIRY": "inquiry", "LEAD": "lead", "TRIAL ARRANGED": "trial_arranged",
-  "TRIAL ATTENDED": "trial_attended", "NO SHOW": "noshow", "ENROLLED": "enrolled",
+  "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow", "ENROLLED": "enrolled",
   "LOST": "lost", "COLD": "cold",
 };
 

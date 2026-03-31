@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-export type ChildStatus = "INQUIRY" | "LEAD" | "TRIAL ARRANGED" | "TRIAL ATTENDED" | "NO SHOW" | "ENROLLED" | "LOST" | "COLD";
+export type ChildStatus = "INQUIRY" | "LEAD" | "TRIAL ARRANGED" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "LOST" | "COLD";
 export type AIStatus = "active" | "admin" | "completed";
 
 export interface Child {

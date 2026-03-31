@@ -122,6 +122,56 @@ function ConversionStatsBar() {
   );
 }
 
+const kanbanStatuses: LeadStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "ENROLLED", "LOST", "COLD"];
+const kanbanColors: Record<string, string> = {
+  "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
+  "TRIAL ATTENDED": "border-t-purple-500", "NO SHOW": "border-t-destructive", "ENROLLED": "border-t-success",
+  "LOST": "border-t-muted-foreground", "COLD": "border-t-muted-foreground",
+};
+
+function KanbanView({ leads: kanbanLeads, onLeadClick }: { leads: Lead[]; onLeadClick: (lead: Lead) => void }) {
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-4">
+      {kanbanStatuses.map((status) => {
+        const statusLeads = kanbanLeads.filter(l => l.status === status);
+        return (
+          <div key={status} className="min-w-[220px] w-[220px] shrink-0">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{status}</h3>
+              <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{statusLeads.length}</span>
+            </div>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {statusLeads.length === 0 && (
+                <div className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">No leads</div>
+              )}
+              {statusLeads.slice(0, 50).map((lead, i) => (
+                <div
+                  key={i}
+                  onClick={() => onLeadClick(lead)}
+                  className={cn(
+                    "rounded-lg border border-border bg-card p-3 cursor-pointer hover:shadow-md transition-shadow border-t-[3px]",
+                    kanbanColors[status] || "border-t-border"
+                  )}
+                >
+                  <p className="text-sm font-medium truncate">{lead.name}</p>
+                  <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+                    <span>{countryFlags[lead.country] || "🌍"}</span>
+                    <span>{lead.channel}</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
+                    <span>{lead.lastContacted}</span>
+                    <span>{lead.assignedTo}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function LeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;

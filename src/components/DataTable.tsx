@@ -14,6 +14,7 @@ interface DataTableProps<T> {
   currentPage?: number;
   totalPages?: number;
   onRowClick?: (row: T, index: number) => void;
+  onPageChange?: (page: number) => void;
   rowClassName?: (row: T) => string;
   emptyMessage?: string;
   selectable?: boolean;

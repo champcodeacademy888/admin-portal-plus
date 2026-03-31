@@ -75,10 +75,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 border-b border-border flex items-center justify-between px-8">
-          <span className="text-sm text-foreground">
-            Good morning, <strong>sales01</strong>.
-          </span>
+         <header className="h-14 border-b border-border flex items-center justify-between px-8">
+           <span className="text-sm text-foreground">
+             Good morning, <strong>Sarah Anderson</strong>.
+           </span>
           <button className="flex items-center gap-2 text-sm text-foreground">
             <Globe size={16} />
             All Countries

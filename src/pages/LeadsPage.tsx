@@ -168,6 +168,9 @@ export default function LeadsPage() {
     return true;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
+  const paginatedLeads = filteredLeads.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const openPanel = (lead: Lead) => {
     setSelectedLead(lead);
     setPanelOpen(true);

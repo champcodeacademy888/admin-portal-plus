@@ -10,7 +10,7 @@ import { parents, countryFlags, type Parent, type Child } from "@/data/parentsDa
 const statusVariantMap: Record<string, string> = {
   "INQUIRY": "inquiry", "LEAD": "lead", "TRIAL ARRANGED": "trial_arranged",
   "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow", "ENROLLED": "enrolled",
-  "CLOSED WON": "closed_won", "LOST": "lost", "COLD": "cold",
+  "CLOSED WON": "closed_won", "LOST": "lost",
 };
 
 function ChannelIcon({ channel }: { channel: string }) {

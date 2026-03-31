@@ -109,6 +109,7 @@ function generateLeads(): Lead[] {
   const result: Lead[] = [];
 
   for (let i = 0; i < 200; i++) {
+    const id = `#${61000 + i}`;
     const firstName = pick(firstNames);
     const lastName = pick(lastNames);
     const name = `${firstName} ${lastName}`;
@@ -128,6 +129,19 @@ function generateLeads(): Lead[] {
     };
     const phone = `${phoneCountryCodes[country]} ${randInt(900,999)} ${randInt(100,999)} ${randInt(1000,9999)}`;
 
+    // Generate 1-3 children per lead
+    const childCount = randInt(1, 3);
+    const children: Child[] = [];
+    for (let c = 0; c < childCount; c++) {
+      const childAge = randInt(6, 15);
+      const childLevel = status === "LEAD" || status === "INQUIRY" ? "—" : pick(levels);
+      children.push({
+        name: `${pick(childFirstNames)} ${lastName}`,
+        age: childAge,
+        level: childLevel,
+      });
+    }
+
     const noteCount = randInt(0, 3);
     const notes: { text: string; time: string }[] = [];
     for (let n = 0; n < noteCount; n++) {
@@ -138,7 +152,7 @@ function generateLeads(): Lead[] {
     }
 
     const lead: Lead = {
-      name, status, country, channel, source, age, level,
+      id, name, children, status, country, channel, source, age: children[0].age, level: children[0].level,
       lastContacted, lastContactedHrs, aiAgent, assignedTo, phone, notes,
     };
 

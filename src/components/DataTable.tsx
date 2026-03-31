@@ -11,6 +11,9 @@ interface DataTableProps<T> {
   totalItems?: number;
   currentPage?: number;
   totalPages?: number;
+  onRowClick?: (row: T, index: number) => void;
+  rowClassName?: (row: T) => string;
+  emptyMessage?: string;
 }
 
 export default function DataTable<T extends Record<string, unknown>>({

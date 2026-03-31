@@ -410,6 +410,7 @@ export default function LeadsPage() {
         currentPage={viewAll ? 1 : currentPage}
         totalPages={viewAll ? 1 : totalPages}
         onPageChange={handlePageChange}
+        viewingAll={viewAll}
         onRowClick={(row) => openPanel(row as unknown as Lead)}
         rowClassName={(row) => {
           const r = row as unknown as Lead;

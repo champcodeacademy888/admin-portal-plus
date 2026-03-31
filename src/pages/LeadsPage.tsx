@@ -135,6 +135,36 @@ export default function LeadsPage() {
   const [countryFilter, setCountryFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
+    "name", "status", "country", "channel", "lastContacted", "aiAgent", "assignedTo", "actions"
+  ]));
+  const [columnsOpen, setColumnsOpen] = useState(false);
+
+  const allColumnKeys = [
+    { key: "name", label: "Parent Name" },
+    { key: "status", label: "Status" },
+    { key: "country", label: "Country" },
+    { key: "channel", label: "Channel" },
+    { key: "lastContacted", label: "Last Contacted" },
+    { key: "aiAgent", label: "AI Agent" },
+    { key: "assignedTo", label: "Assigned To" },
+    { key: "trialDate", label: "Trial Date" },
+    { key: "packageInterest", label: "Package Interest" },
+    { key: "lastNote", label: "Last Note" },
+    { key: "age", label: "Age" },
+    { key: "level", label: "Level" },
+    { key: "actions", label: "Actions" },
+  ];
+
+  const toggleColumn = (key: string) => {
+    setVisibleColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   // Lost reason modal
   const [lostReasonOpen, setLostReasonOpen] = useState(false);

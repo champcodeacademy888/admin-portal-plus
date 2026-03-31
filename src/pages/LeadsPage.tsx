@@ -121,10 +121,10 @@ function ConversionStatsBar() {
   );
 }
 
-const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL ATTENDED", "NO SHOW", "LOST", "COLD"];
+const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "LOST", "COLD"];
 const kanbanColors: Record<string, string> = {
   "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
-  "TRIAL ATTENDED": "border-t-purple-500", "NO SHOW": "border-t-destructive",
+  "TRIAL DONE": "border-t-purple-500", "MISSED TRIAL": "border-t-destructive",
   "LOST": "border-t-muted-foreground", "COLD": "border-t-muted-foreground",
 };
 

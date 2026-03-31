@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className={cn(
-        "bg-sidebar flex flex-col border-r border-sidebar-border shrink-0 transition-all duration-200",
+        "bg-sidebar flex flex-col border-r border-sidebar-border shrink-0 transition-all duration-200 h-screen sticky top-0",
         collapsed ? "w-[68px]" : "w-[220px]"
       )}>
         <div className={cn("flex items-center gap-3 py-5", collapsed ? "px-3 justify-center" : "px-5")}>

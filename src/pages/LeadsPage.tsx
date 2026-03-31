@@ -420,6 +420,36 @@ export default function LeadsPage() {
               </div>
             </PopoverContent>
           </Popover>
+          <Popover open={columnsOpen} onOpenChange={setColumnsOpen}>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">
+                <Columns3 size={14} /> Columns
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52" align="end">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Toggle columns</p>
+                {allColumnKeys.map((col) => (
+                  <label key={col.key} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm">
+                    <Checkbox checked={visibleColumns.has(col.key)} onCheckedChange={() => toggleColumn(col.key)} />
+                    {col.label}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <div className="flex items-center border border-border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode("table")}
+              className={cn("px-2.5 py-2 transition-colors", viewMode === "table" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground")}
+              title="Table view"
+            ><List size={15} /></button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={cn("px-2.5 py-2 transition-colors", viewMode === "kanban" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground")}
+              title="Board view"
+            ><LayoutGrid size={15} /></button>
+          </div>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -436,24 +466,28 @@ export default function LeadsPage() {
 
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); setCurrentPage(1); }} />
 
-      <DataTable
-        columns={columns as any}
-        data={paginatedLeads as any}
-        totalItems={filteredLeads.length}
-        currentPage={viewAll ? 1 : currentPage}
-        totalPages={viewAll ? 1 : totalPages}
-        onPageChange={handlePageChange}
-        viewingAll={viewAll}
-        onRowClick={(row) => openPanel(row as unknown as Lead)}
-        rowClassName={(row) => {
-          const r = row as unknown as Lead;
-          return isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : "";
-        }}
-        emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
-        selectable
-        selectedIndices={selectedIndices}
-        onSelectionChange={setSelectedIndices}
-      />
+      {viewMode === "table" ? (
+        <DataTable
+          columns={filteredColumns as any}
+          data={paginatedLeads as any}
+          totalItems={filteredLeads.length}
+          currentPage={viewAll ? 1 : currentPage}
+          totalPages={viewAll ? 1 : totalPages}
+          onPageChange={handlePageChange}
+          viewingAll={viewAll}
+          onRowClick={(row) => openPanel(row as unknown as Lead)}
+          rowClassName={(row) => {
+            const r = row as unknown as Lead;
+            return isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : "";
+          }}
+          emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
+          selectable
+          selectedIndices={selectedIndices}
+          onSelectionChange={setSelectedIndices}
+        />
+      ) : (
+        <KanbanView leads={filteredLeads} onLeadClick={openPanel} />
+      )}
 
       {/* Bulk Action Bar */}
       {selectedIndices.size > 0 && (

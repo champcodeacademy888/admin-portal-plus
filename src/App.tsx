@@ -9,6 +9,7 @@ import LeadsPage from "./pages/LeadsPage";
 import TrialsPage from "./pages/TrialsPage";
 import EnrolmentsPage from "./pages/EnrolmentsPage";
 import StudentsPage from "./pages/StudentsPage";
+import PackagesPage from "./pages/PackagesPage";
 import AttendancePage from "./pages/AttendancePage";
 import MakeupsPage from "./pages/MakeupsPage";
 import CoverPage from "./pages/CoverPage";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/leads" element={<LeadsPage />} />
             <Route path="/trials" element={<TrialsPage />} />
             <Route path="/enrolments" element={<EnrolmentsPage />} />
+            <Route path="/packages" element={<PackagesPage />} />
             <Route path="/students" element={<StudentsPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/makeups" element={<MakeupsPage />} />

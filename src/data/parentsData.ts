@@ -156,7 +156,7 @@ function generateParents(): Parent[] {
         child.packageInterest = pick(packageInterests);
       }
 
-      if (childStatus === "ENROLLED") {
+      if (childStatus === "ENROLLED" || childStatus === "CLOSED WON") {
         child.packageInterest = pick(packageInterests);
         child.enrolledDate = `${randInt(1, 28)} Mar 2026`;
         child.handedOff = rand() > 0.5;

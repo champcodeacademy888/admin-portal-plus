@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         )}
 
-        <nav className={cn("flex-1 space-y-0.5", collapsed ? "px-2" : "px-3")}>
+        <nav className={cn("flex-1 overflow-y-auto space-y-0.5", collapsed ? "px-2" : "px-3")}>
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             const link = (

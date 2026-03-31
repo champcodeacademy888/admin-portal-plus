@@ -14,6 +14,7 @@ interface DataTableProps<T> {
   currentPage?: number;
   totalPages?: number;
   onRowClick?: (row: T, index: number) => void;
+  onPageChange?: (page: number) => void;
   rowClassName?: (row: T) => string;
   emptyMessage?: string;
   selectable?: boolean;
@@ -28,6 +29,7 @@ export default function DataTable<T extends Record<string, unknown>>({
   currentPage = 1,
   totalPages = 1,
   onRowClick,
+  onPageChange,
   rowClassName,
   emptyMessage = "No data found",
   selectable = false,
@@ -108,9 +110,9 @@ export default function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
       <div className="flex items-center justify-center gap-4 py-3 border-t border-border text-sm text-muted-foreground">
-        <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1}>Previous</button>
+        <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>Previous</button>
         <span>Page {currentPage} of {totalPages} · {totalItems ?? data.length} total</span>
-        <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages}>Next</button>
+        <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => onPageChange?.(currentPage + 1)}>Next</button>
       </div>
     </div>
   );

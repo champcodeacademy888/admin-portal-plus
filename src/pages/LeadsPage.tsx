@@ -12,6 +12,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { leads, todayFormatted, type Lead } from "@/data/leadsData";
 
 const countryFlags: Record<string, string> = {
   "Singapore": "🇸🇬", "Malaysia": "🇲🇾", "Philippines": "🇵🇭", "Indonesia": "🇮🇩",
@@ -21,50 +22,8 @@ const countryFlags: Record<string, string> = {
 type AIStatus = "active" | "admin" | "completed";
 type LeadStatus = "LEAD" | "TRIAL ATTENDED" | "NO SHOW" | "ENROLLED" | "LOST" | "COLD" | "TRIAL ARRANGED" | "INQUIRY";
 
-interface Lead {
-  name: string;
-  status: LeadStatus;
-  country: string;
-  channel: "WhatsApp" | "Messenger";
-  source: string;
-  age: number;
-  level: string;
-  lastContacted: string;
-  lastContactedHrs: number;
-  aiAgent: AIStatus;
-  assignedTo: string;
-  phone: string;
-  notes: { text: string; time: string }[];
-  trialDate?: string;
-  trialPassed?: boolean;
-  trialOutcomeMarked?: boolean;
-  hoursSinceTrial?: number;
-  packageInterest?: string;
-  lostReason?: string;
-  reengagementDate?: string;
-  handedOff?: boolean;
-}
-
 const today = new Date();
-const todayStr = format(today, "EEE d MMM");
-
-const leads: Lead[] = [
-  { name: "Asela Perera", status: "LEAD", country: "Sri Lanka", channel: "WhatsApp", source: "Meta Ads (Facebook)", age: 10, level: "—", lastContacted: "2 hrs ago", lastContactedHrs: 2, aiAgent: "active", assignedTo: "Sarah A.", phone: "+94 77 123 4567", notes: [] },
-  { name: "MA E Cuison", status: "LEAD", country: "Philippines", channel: "Messenger", source: "Meta Ads (Facebook)", age: 11, level: "—", lastContacted: "22 hrs ago", lastContactedHrs: 22, aiAgent: "active", assignedTo: "Sarah A.", phone: "+63 917 123 4567", notes: [] },
-  { name: "Sid Pelaez", status: "LEAD", country: "Philippines", channel: "Messenger", source: "Meta Ads (Facebook)", age: 7, level: "—", lastContacted: "5 hrs ago", lastContactedHrs: 5, aiAgent: "admin", assignedTo: "James L.", phone: "+63 918 234 5678", notes: [{ text: "Parent interested in weekend classes", time: "28 Mar 2026, 10:30 AM" }] },
-  { name: "Anna Salutan", status: "TRIAL ATTENDED", country: "Philippines", channel: "Messenger", source: "Meta Ads (Facebook)", age: 7, level: "Beginner", lastContacted: "3 days ago", lastContactedHrs: 72, aiAgent: "completed", assignedTo: "Sarah A.", phone: "+63 919 345 6789", notes: [{ text: "Trial went well, follow up for enrollment", time: "26 Mar 2026, 2:15 PM" }], hoursSinceTrial: 72, packageInterest: "8 lessons / month" },
-  { name: "Facebook user", status: "LEAD", country: "Philippines", channel: "Messenger", source: "Meta Ads (Facebook)", age: 12, level: "—", lastContacted: "21 hrs ago", lastContactedHrs: 21, aiAgent: "active", assignedTo: "Sarah A.", phone: "—", notes: [] },
-  { name: "Leonard Bryan Tria Osi", status: "TRIAL ARRANGED", country: "Philippines", channel: "Messenger", source: "Meta Ads (Facebook)", age: 9, level: "Beginner", lastContacted: "1 day ago", lastContactedHrs: 24, aiAgent: "active", assignedTo: "James L.", phone: "+63 920 456 7890", notes: [], trialDate: format(today, "EEE d MMM") + ", 10:00 AM", trialPassed: false },
-  { name: "Aileen Jereza Deloverges", status: "NO SHOW", country: "Philippines", channel: "Messenger", source: "—", age: 8, level: "—", lastContacted: "23 hrs ago", lastContactedHrs: 23, aiAgent: "admin", assignedTo: "Sarah A.", phone: "+63 921 567 8901", notes: [{ text: "No show - tried calling twice", time: "29 Mar 2026, 4:00 PM" }] },
-  { name: "Trend Tech Services", status: "LEAD", country: "Malaysia", channel: "WhatsApp", source: "Meta Ads (WhatsApp)", age: 11, level: "—", lastContacted: "6 hrs ago", lastContactedHrs: 6, aiAgent: "active", assignedTo: "James L.", phone: "+60 12 345 6789", notes: [] },
-  { name: "Daniella De vos", status: "TRIAL ATTENDED", country: "Sri Lanka", channel: "WhatsApp", source: "Meta Ads (Form)", age: 9, level: "Intermediate", lastContacted: "12 hrs ago", lastContactedHrs: 12, aiAgent: "completed", assignedTo: "Sarah A.", phone: "+94 71 234 5678", notes: [], hoursSinceTrial: 10, packageInterest: "Trial only" },
-  { name: "Sad Summer", status: "NO SHOW", country: "Philippines", channel: "Messenger", source: "Meta Ads (Facebook)", age: 8, level: "—", lastContacted: "4 days ago", lastContactedHrs: 96, aiAgent: "completed", assignedTo: "James L.", phone: "+63 922 678 9012", notes: [{ text: "Rescheduling pending", time: "27 Mar 2026, 11:00 AM" }] },
-  { name: "Mike Chen", status: "ENROLLED", country: "Singapore", channel: "WhatsApp", source: "Referral", age: 10, level: "Advanced", lastContacted: "1 hr ago", lastContactedHrs: 1, aiAgent: "completed", assignedTo: "Sarah A.", phone: "+65 9123 4567", notes: [{ text: "Enrolled in 8-lesson package", time: "30 Mar 2026, 9:00 AM" }], packageInterest: "8 lessons / month" },
-  { name: "Priya Nair", status: "LOST", country: "Malaysia", channel: "WhatsApp", source: "Meta Ads (Form)", age: 8, level: "—", lastContacted: "5 days ago", lastContactedHrs: 120, aiAgent: "completed", assignedTo: "James L.", phone: "+60 11 234 5678", notes: [{ text: "Price too high", time: "25 Mar 2026, 3:00 PM" }], lostReason: "Price" },
-  { name: "Ravi Kumar", status: "COLD", country: "Sri Lanka", channel: "Messenger", source: "Meta Ads (Facebook)", age: 12, level: "—", lastContacted: "10 days ago", lastContactedHrs: 240, aiAgent: "completed", assignedTo: "Sarah A.", phone: "+94 76 456 7890", notes: [] },
-  { name: "Jessica Tan", status: "TRIAL ARRANGED", country: "Singapore", channel: "WhatsApp", source: "Referral", age: 7, level: "Beginner", lastContacted: "4 hrs ago", lastContactedHrs: 4, aiAgent: "admin", assignedTo: "Sarah A.", phone: "+65 8234 5678", notes: [], trialDate: "Sat 5 Apr, 2:00 PM", trialPassed: false },
-  { name: "Ahmad Rizal", status: "TRIAL ARRANGED", country: "Malaysia", channel: "WhatsApp", source: "Meta Ads (WhatsApp)", age: 11, level: "Beginner", lastContacted: "1 day ago", lastContactedHrs: 26, aiAgent: "active", assignedTo: "James L.", phone: "+60 13 456 7890", notes: [], trialDate: "Mon 28 Mar, 10:00 AM", trialPassed: true, trialOutcomeMarked: false },
-];
+const todayStr = todayFormatted;
 
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
@@ -163,6 +122,8 @@ function ConversionStatsBar() {
 }
 
 export default function LeadsPage() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
   const [activeTab, setActiveTab] = useState(0);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -206,6 +167,9 @@ export default function LeadsPage() {
     if (channelFilter !== "all" && lead.channel !== channelFilter) return false;
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
+  const paginatedLeads = filteredLeads.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const openPanel = (lead: Lead) => {
     setSelectedLead(lead);
@@ -431,14 +395,15 @@ export default function LeadsPage() {
 
       <ConversionStatsBar />
 
-      <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); }} />
+      <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); setCurrentPage(1); }} />
 
       <DataTable
         columns={columns as any}
-        data={filteredLeads as any}
+        data={paginatedLeads as any}
         totalItems={filteredLeads.length}
-        currentPage={1}
-        totalPages={Math.max(1, Math.ceil(filteredLeads.length / 10))}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
         onRowClick={(row) => openPanel(row as unknown as Lead)}
         rowClassName={(row) => {
           const r = row as unknown as Lead;

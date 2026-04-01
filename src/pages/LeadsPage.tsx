@@ -739,7 +739,7 @@ export default function LeadsPage() {
 
   return (
     <div>
-      <EODSummaryBanner />
+      <DailySummary />
 
       <PageHeader title="Leads" subtitle="Student pipeline — inquiry to trial">
         <div className="flex items-center gap-3">

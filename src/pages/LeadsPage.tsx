@@ -323,11 +323,12 @@ export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [compact, setCompact] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "student", "parent", "status", "country", "channel", "lastContacted", "assignedTo", "urgency", "actions"
+    "studentId", "student", "parent", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "assignedTo", "urgency", "actions"
   ]));
   const [columnsOpen, setColumnsOpen] = useState(false);
 
   const allColumnKeys = [
+    { key: "studentId", label: "Student ID" },
     { key: "student", label: "Student" },
     { key: "parent", label: "Parent" },
     { key: "status", label: "Status" },
@@ -338,6 +339,7 @@ export default function LeadsPage() {
     { key: "aiAgent", label: "AI Agent" },
     { key: "assignedTo", label: "Assigned To" },
     { key: "trialDate", label: "Trial Date" },
+    { key: "trialTutor", label: "Trial Tutor" },
     { key: "packageInterest", label: "Package Interest" },
     { key: "age", label: "Age" },
     { key: "level", label: "Level" },

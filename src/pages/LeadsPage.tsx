@@ -579,6 +579,11 @@ export default function LeadsPage() {
       ),
     },
     {
+      key: "psid", header: "PSID", render: (r: ChildWithParent) => (
+        <span className="text-xs text-muted-foreground font-mono">{r.parent.psid || "—"}</span>
+      ),
+    },
+    {
       key: "status", header: "Status", render: (r: ChildWithParent) => (
         <div className="flex items-center gap-1 flex-wrap">
           <StatusBadge variant={statusVariantMap[r.status] as any}>{r.status}</StatusBadge>

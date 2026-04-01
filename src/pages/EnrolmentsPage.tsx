@@ -62,6 +62,11 @@ const columns = [
       <span className="text-sm">{r.lessonDay || "—"}</span>
     ),
   },
+  {
+    key: "psid", header: "PSID", render: (r: ChildWithParent) => (
+      <span className="text-xs text-muted-foreground font-mono">{r.parent.psid || "—"}</span>
+    ),
+  },
   { key: "country", header: "Country", render: (r: ChildWithParent) => <span>{countryFlags[r.parent.country] || "🌍"} {r.parent.country}</span> },
   { key: "channel", header: "Channel", render: (r: ChildWithParent) => <ChannelIcon channel={r.parent.channel} /> },
   {

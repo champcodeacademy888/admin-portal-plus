@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PageHeader from "@/components/PageHeader";
 import FilterTabs from "@/components/FilterTabs";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, MessageCircle, Eye, MoreHorizontal, X, Phone, SlidersHorizontal, AlertTriangle, Calendar, ArrowRight, Download, Users, TrendingUp, LayoutGrid, List, Columns3 } from "lucide-react";
+import { Search, MessageCircle, Eye, MoreHorizontal, X, Phone, SlidersHorizontal, AlertTriangle, Calendar, ArrowRight, Download, Users, TrendingUp, LayoutGrid, List, Columns3, Flame, CheckCircle, XCircle, UserCheck, Minimize2, Maximize2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -20,10 +21,8 @@ const todayStr = todayFormatted;
 
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
-// Lead statuses (pre-enrollment pipeline)
 const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST"];
 
-// Get all children in lead pipeline stages
 const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.status));
 
 const needsAttention = (c: ChildWithParent) =>
@@ -35,25 +34,89 @@ const needsAttention = (c: ChildWithParent) =>
 
 const needsAttentionCount = allLeadChildren.filter(needsAttention).length;
 
+// Urgency scoring for Needs Attention tab
+function getUrgencyScore(c: ChildWithParent): { score: number; flames: number; color: string } {
+  // Messenger 24hr expiring < 2hrs
+  if (c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 22) {
+    return { score: 1, flames: 3, color: "text-destructive" };
+  }
+  // Post-trial follow-up overdue
+  if (c.status === "TRIAL DONE" && (c.hoursSinceTrial ?? 0) >= 24) {
+    return { score: 2, flames: 3, color: "text-orange-500" };
+  }
+  if (c.status === "MISSED TRIAL") {
+    return { score: 2, flames: 3, color: "text-orange-500" };
+  }
+  // Messenger 2-8hrs
+  if (c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 16 && c.parent.lastContactedHrs < 22) {
+    return { score: 3, flames: 2, color: "text-warning" };
+  }
+  // WhatsApp follow-up
+  if (c.parent.channel === "WhatsApp" && c.parent.lastContactedHrs >= 24) {
+    return { score: 4, flames: 1, color: "text-muted-foreground" };
+  }
+  // Trial passed but not marked
+  if (c.status === "TRIAL ARRANGED" && c.trialPassed && !c.trialOutcomeMarked) {
+    return { score: 2, flames: 2, color: "text-orange-500" };
+  }
+  return { score: 5, flames: 1, color: "text-muted-foreground" };
+}
+
+function FlameIcons({ count, color }: { count: number; color: string }) {
+  return (
+    <span className={`inline-flex items-center gap-0 ${color}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <Flame key={i} size={12} fill="currentColor" />
+      ))}
+    </span>
+  );
+}
+
 const statusVariantMap: Record<string, string> = {
   "LEAD": "lead", "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow",
   "ENROLLED": "enrolled", "CLOSED WON": "closed_won", "LOST": "lost",
   "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry",
 };
 
-const tabs = [
-  { label: "All", count: allLeadChildren.length },
-  { label: "Needs Attention", badgeCount: needsAttentionCount, badgeColor: "bg-destructive" },
-  { label: "Inquiry" }, { label: "Lead" }, { label: "Trial Arranged" },
-  { label: "Trial Done" }, { label: "Missed Trial" }, { label: "Closed Won" },
-  { label: "Lost" },
-];
+// Status advancement map
+const nextStatusMap: Record<string, ChildStatus> = {
+  "INQUIRY": "LEAD",
+  "LEAD": "TRIAL ARRANGED",
+  "TRIAL ARRANGED": "TRIAL DONE",
+  "TRIAL DONE": "CLOSED WON",
+  "MISSED TRIAL": "TRIAL ARRANGED",
+};
 
 const statusFilterMap: Record<string, string> = {
   "Inquiry": "INQUIRY", "Lead": "LEAD", "Trial Arranged": "TRIAL ARRANGED",
   "Trial Done": "TRIAL DONE", "Missed Trial": "MISSED TRIAL", "Closed Won": "CLOSED WON",
   "Lost": "LOST",
 };
+
+// Tab counts
+const tabCounts: Record<string, number> = {
+  "All": allLeadChildren.length,
+  "Needs Attention": needsAttentionCount,
+  "Inquiry": allLeadChildren.filter(c => c.status === "INQUIRY").length,
+  "Lead": allLeadChildren.filter(c => c.status === "LEAD").length,
+  "Trial Arranged": allLeadChildren.filter(c => c.status === "TRIAL ARRANGED").length,
+  "Trial Done": allLeadChildren.filter(c => c.status === "TRIAL DONE").length,
+  "Missed Trial": allLeadChildren.filter(c => c.status === "MISSED TRIAL").length,
+  "Closed Won": allLeadChildren.filter(c => c.status === "CLOSED WON").length,
+  "Lost": allLeadChildren.filter(c => c.status === "LOST").length,
+};
+
+const tabs = [
+  { label: "All", count: tabCounts["All"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Needs Attention", count: tabCounts["Needs Attention"], badgeColor: tabCounts["Needs Attention"] > 0 ? "bg-destructive" : "bg-muted-foreground/60" },
+  { label: "Inquiry", count: tabCounts["Inquiry"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Lead", count: tabCounts["Lead"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Trial Arranged", count: tabCounts["Trial Arranged"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Trial Done", count: tabCounts["Trial Done"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Missed Trial", count: tabCounts["Missed Trial"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Closed Won", count: tabCounts["Closed Won"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Lost", count: tabCounts["Lost"], badgeColor: "bg-muted-foreground/60" },
+];
 
 function ChannelIcon({ channel }: { channel: string }) {
   if (channel === "WhatsApp") return (
@@ -90,7 +153,6 @@ function ConversionStatsBar() {
   const leadsCount = allLeadChildren.filter(l => l.status === "LEAD").length;
   const trialArranged = allLeadChildren.filter(l => l.status === "TRIAL ARRANGED").length;
   const trialDone = allLeadChildren.filter(l => l.status === "TRIAL DONE").length;
-  // Enrolled children from all parents
   const enrolled = getAllChildren().filter(c => c.status === "ENROLLED").length;
 
   const inquiryToLead = inquiries + leadsCount > 0 ? Math.round((leadsCount / (inquiries + leadsCount)) * 100) : 0;
@@ -175,10 +237,80 @@ function KanbanView({ leads, onLeadClick }: { leads: ChildWithParent[]; onLeadCl
   );
 }
 
+// EOD Summary banner
+function EODSummaryBanner() {
+  const hour = new Date().getHours();
+  const [dismissed, setDismissed] = useState(false);
+  if (hour < 17 || dismissed) return null;
+
+  const actioned = Math.floor(Math.random() * 30) + 15;
+  const trialsBooked = Math.floor(Math.random() * 8) + 2;
+  const enrolled = Math.floor(Math.random() * 5) + 1;
+  const messengerPending = allLeadChildren.filter(c => c.parent.channel === "Messenger" && needsAttention(c)).length;
+
+  return (
+    <div className="mb-4 flex items-center justify-between rounded-lg border border-info/30 bg-info/5 px-4 py-3">
+      <p className="text-sm text-foreground">
+        <span className="font-semibold">Today's summary:</span> {actioned} leads actioned, {trialsBooked} trials booked, {enrolled} enrolled.
+        {messengerPending > 0 && <span className="text-destructive font-medium"> {messengerPending} Messenger leads still need follow-up.</span>}
+      </p>
+      <button onClick={() => setDismissed(true)} className="p-1 hover:bg-muted rounded"><X size={14} /></button>
+    </div>
+  );
+}
+
+// Smart bulk suggestion
+function getBulkSuggestion(selected: ChildWithParent[]): { label: string; action: string } | null {
+  if (selected.length === 0) return null;
+  const statusCounts: Record<string, number> = {};
+  selected.forEach(s => { statusCounts[s.status] = (statusCounts[s.status] || 0) + 1; });
+  const dominant = Object.entries(statusCounts).sort((a, b) => b[1] - a[1])[0];
+  if (!dominant) return null;
+  const [status, count] = dominant;
+  const ratio = count / selected.length;
+  if (ratio < 0.5) return null;
+
+  switch (status) {
+    case "TRIAL DONE": return { label: `Mark ${count} as Closed Won`, action: "CLOSED WON" };
+    case "INQUIRY": return { label: `Advance ${count} to Lead`, action: "LEAD" };
+    case "LEAD": return { label: `Arrange trials for ${count}`, action: "TRIAL ARRANGED" };
+    case "TRIAL ARRANGED": return { label: `Mark ${count} trials as done`, action: "TRIAL DONE" };
+    case "MISSED TRIAL": return { label: `Reschedule ${count} trials`, action: "TRIAL ARRANGED" };
+    default: return null;
+  }
+}
+
+// Quick preview hover card content
+function LeadQuickPreview({ lead }: { lead: ChildWithParent }) {
+  const lastNote = lead.parent.notes.length > 0 ? lead.parent.notes[lead.parent.notes.length - 1] : null;
+  return (
+    <div className="space-y-2">
+      <div>
+        <p className="text-sm font-semibold">{lead.parent.name}</p>
+        <p className="text-xs text-muted-foreground">{lead.parent.phone}</p>
+      </div>
+      <div className="border-t border-border pt-2">
+        <p className="text-xs"><span className="text-muted-foreground">Student:</span> {lead.name}, Age {lead.age}, {lead.level}</p>
+      </div>
+      {lastNote && (
+        <div className="border-t border-border pt-2">
+          <p className="text-xs text-muted-foreground">Last note:</p>
+          <p className="text-xs truncate">{lastNote.text}</p>
+        </div>
+      )}
+      <div className="flex items-center gap-2 pt-1">
+        <StatusBadge variant={statusVariantMap[lead.status] as any} className="text-[10px]">{lead.status}</StatusBadge>
+        <span className="text-[10px] text-muted-foreground">{countryFlags[lead.parent.country]} {lead.parent.country}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function LeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
-  const [activeTab, setActiveTab] = useState(0);
+  // Default to "Needs Attention" tab (index 1)
+  const [activeTab, setActiveTab] = useState(1);
   const [selectedChild, setSelectedChild] = useState<ChildWithParent | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -188,8 +320,9 @@ export default function LeadsPage() {
   const [channelFilter, setChannelFilter] = useState("all");
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+  const [compact, setCompact] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "student", "parent", "status", "country", "channel", "lastContacted", "assignedTo", "actions"
+    "student", "parent", "status", "country", "channel", "lastContacted", "assignedTo", "urgency", "actions"
   ]));
   const [columnsOpen, setColumnsOpen] = useState(false);
 
@@ -200,6 +333,7 @@ export default function LeadsPage() {
     { key: "country", label: "Country" },
     { key: "channel", label: "Channel" },
     { key: "lastContacted", label: "Last Contacted" },
+    { key: "urgency", label: "Urgency" },
     { key: "aiAgent", label: "AI Agent" },
     { key: "assignedTo", label: "Assigned To" },
     { key: "trialDate", label: "Trial Date" },
@@ -227,20 +361,32 @@ export default function LeadsPage() {
   const [reengageDate, setReengageDate] = useState<Date | undefined>();
   const [bulkStatusOpen, setBulkStatusOpen] = useState(false);
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
+  // Inline lost reason for quick action
+  const [inlineLostIndex, setInlineLostIndex] = useState<number | null>(null);
 
-  const filteredLeads = allLeadChildren.filter((child) => {
-    const tab = tabs[activeTab].label;
-    if (tab === "Needs Attention" && !needsAttention(child)) return false;
-    if (tab !== "All" && tab !== "Needs Attention" && child.status !== statusFilterMap[tab]) return false;
-    if (search && !child.name.toLowerCase().includes(search.toLowerCase()) && !child.parent.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (countryFilter !== "all" && child.parent.country !== countryFilter) return false;
-    if (channelFilter !== "all" && child.parent.channel !== channelFilter) return false;
-    return true;
-  });
+  const filteredLeads = useMemo(() => {
+    let result = allLeadChildren.filter((child) => {
+      const tab = tabs[activeTab].label;
+      if (tab === "Needs Attention" && !needsAttention(child)) return false;
+      if (tab !== "All" && tab !== "Needs Attention" && child.status !== statusFilterMap[tab]) return false;
+      if (search && !child.name.toLowerCase().includes(search.toLowerCase()) && !child.parent.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (countryFilter !== "all" && child.parent.country !== countryFilter) return false;
+      if (channelFilter !== "all" && child.parent.channel !== channelFilter) return false;
+      return true;
+    });
+
+    // Sort by urgency in Needs Attention tab
+    if (tabs[activeTab].label === "Needs Attention") {
+      result = [...result].sort((a, b) => getUrgencyScore(a).score - getUrgencyScore(b).score);
+    }
+
+    return result;
+  }, [activeTab, search, countryFilter, channelFilter]);
 
   const viewAll = currentPage === 0;
-  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
-  const paginatedLeads = viewAll ? filteredLeads : filteredLeads.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const compactPageSize = compact ? 25 : pageSize;
+  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / compactPageSize));
+  const paginatedLeads = viewAll ? filteredLeads : filteredLeads.slice((currentPage - 1) * compactPageSize, currentPage * compactPageSize);
 
   const handlePageChange = (page: number) => {
     if (page === 0) setCurrentPage(0);
@@ -298,16 +444,39 @@ export default function LeadsPage() {
     return "";
   };
 
+  // Determine visible columns based on compact mode
+  const effectiveVisibleColumns = compact
+    ? new Set(["student", "status", "country", "channel", "lastContacted", "urgency", "actions"])
+    : visibleColumns;
+
   const columns = [
     {
-      key: "student", header: "Student", render: (r: ChildWithParent) => (
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
-            <span className="font-medium">{r.name}</span>
-          </div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">Age {r.age} · {r.level}</div>
-        </div>
+      key: "student", header: "Student", render: (r: ChildWithParent) => compact ? (
+        <HoverCard openDelay={500}>
+          <HoverCardTrigger asChild>
+            <div className="cursor-default">
+              <span className="font-medium">{r.name}</span>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent side="right" className="w-72">
+            <LeadQuickPreview lead={r} />
+          </HoverCardContent>
+        </HoverCard>
+      ) : (
+        <HoverCard openDelay={500}>
+          <HoverCardTrigger asChild>
+            <div className="cursor-default">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
+                <span className="font-medium">{r.name}</span>
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">Age {r.age} · {r.level}</div>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent side="right" className="w-72">
+            <LeadQuickPreview lead={r} />
+          </HoverCardContent>
+        </HoverCard>
       ),
     },
     {
@@ -338,6 +507,13 @@ export default function LeadsPage() {
         </span>
       ),
     },
+    {
+      key: "urgency", header: "Urgency", render: (r: ChildWithParent) => {
+        if (!needsAttention(r)) return <span className="text-muted-foreground text-xs">—</span>;
+        const u = getUrgencyScore(r);
+        return <FlameIcons count={u.flames} color={u.color} />;
+      },
+    },
     { key: "aiAgent", header: "AI Agent", render: (r: ChildWithParent) => <AIStatusBadge status={r.parent.aiAgent} /> },
     { key: "assignedTo", header: "Assigned To", render: (r: ChildWithParent) => <span>{r.parent.assignedTo}</span> },
     {
@@ -355,29 +531,80 @@ export default function LeadsPage() {
     { key: "age", header: "Age", render: (r: ChildWithParent) => <span>{r.age}</span> },
     { key: "level", header: "Level", render: (r: ChildWithParent) => <span>{r.level}</span> },
     {
-      key: "actions", header: "Actions", render: (r: ChildWithParent) => (
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <button className="p-1.5 rounded-md hover:bg-muted text-success" title="WhatsApp"><Phone size={15} /></button>
-          <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" title="View" onClick={() => openPanel(r)}><Eye size={15} /></button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"><MoreHorizontal size={15} /></button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleMarkAsLost(r)}>Mark as Lost</DropdownMenuItem>
-              {r.status === "LOST" && (
-                <DropdownMenuItem onClick={() => handleReengage(r)}>
-                  <Calendar size={14} className="mr-2" /> Schedule Re-engagement
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
+      key: "actions", header: "", render: (r: ChildWithParent, _idx?: number) => {
+        const rowIdx = paginatedLeads.indexOf(r);
+        return (
+          <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+            {/* WhatsApp */}
+            <button
+              className="p-1.5 rounded-md hover:bg-success/10 text-success"
+              title="WhatsApp"
+              onClick={() => {
+                const phone = r.parent.phone.replace(/\s+/g, "");
+                window.open(`https://wa.me/${phone}`, "_blank");
+              }}
+            >
+              <Phone size={15} />
+            </button>
+            {/* Messenger */}
+            <button
+              className="p-1.5 rounded-md hover:bg-info/10 text-info"
+              title="Messenger"
+              onClick={() => window.open("https://m.me/", "_blank")}
+            >
+              <MessageCircle size={15} />
+            </button>
+            {/* Takeover */}
+            <button
+              className="p-1.5 rounded-md hover:bg-purple-500/10 text-purple-500"
+              title="Take over from AI"
+            >
+              <UserCheck size={15} />
+            </button>
+            {/* Quick advance */}
+            {nextStatusMap[r.status] && (
+              <button
+                className="p-1.5 rounded-md hover:bg-success/10 text-success"
+                title={`Advance to ${nextStatusMap[r.status]}`}
+              >
+                <CheckCircle size={15} />
+              </button>
+            )}
+            {/* Mark as lost (inline) */}
+            {r.status !== "LOST" && r.status !== "CLOSED WON" && (
+              <div className="relative">
+                <button
+                  className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive"
+                  title="Mark as Lost"
+                  onClick={() => setInlineLostIndex(inlineLostIndex === rowIdx ? null : rowIdx)}
+                >
+                  <XCircle size={15} />
+                </button>
+                {inlineLostIndex === rowIdx && (
+                  <div className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg p-2 w-40">
+                    <p className="text-[10px] text-muted-foreground mb-1 font-medium">Lost reason:</p>
+                    {LOST_REASONS.filter(r => r !== "Other").map((reason) => (
+                      <button
+                        key={reason}
+                        className="w-full text-left px-2 py-1.5 text-xs hover:bg-muted rounded-md"
+                        onClick={() => setInlineLostIndex(null)}
+                      >
+                        {reason}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* View */}
+            <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" title="View" onClick={() => openPanel(r)}><Eye size={15} /></button>
+          </div>
+        );
+      },
     },
   ];
 
-  const filteredColumns = columns.filter(col => visibleColumns.has(col.key));
+  const filteredColumns = columns.filter(col => effectiveVisibleColumns.has(col.key));
 
   const tabEmptyMessages: Record<string, string> = {
     "Needs Attention": "No leads need attention right now 🎉",
@@ -385,12 +612,18 @@ export default function LeadsPage() {
     "Trial Arranged": "No trials arranged yet",
     "Trial Done": "No completed trials yet",
     "Missed Trial": "No missed trials — great!",
+    "Closed Won": "No closed won leads yet",
     "Lost": "No lost leads — keep it up!",
-    "Cold": "No cold leads",
   };
+
+  // Smart bulk suggestion
+  const selectedLeads = Array.from(selectedIndices).map(i => paginatedLeads[i]).filter(Boolean);
+  const bulkSuggestion = getBulkSuggestion(selectedLeads);
 
   return (
     <div>
+      <EODSummaryBanner />
+
       <PageHeader title="Leads" subtitle="Student pipeline — inquiry to trial">
         <div className="flex items-center gap-3">
           {needsAttentionCount > 0 && (
@@ -450,6 +683,18 @@ export default function LeadsPage() {
               </div>
             </PopoverContent>
           </Popover>
+          {/* Compact toggle */}
+          <button
+            onClick={() => setCompact(!compact)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 border rounded-lg text-sm transition-colors",
+              compact ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted text-muted-foreground"
+            )}
+            title={compact ? "Standard view" : "Compact view"}
+          >
+            {compact ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+            {compact ? "Standard" : "Compact"}
+          </button>
           <div className="flex items-center border border-border rounded-lg overflow-hidden">
             <button
               onClick={() => setViewMode("table")}
@@ -476,27 +721,37 @@ export default function LeadsPage() {
 
       <ConversionStatsBar />
 
-      <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); setCurrentPage(1); }} />
+      <FilterTabs
+        tabs={tabs}
+        activeIndex={activeTab}
+        onChange={(i) => { setActiveTab(i); setSelectedIndices(new Set()); setCurrentPage(1); }}
+        subtitle={tabs[activeTab].label === "Needs Attention" ? "Sorted by urgency — most urgent first" : undefined}
+      />
 
       {viewMode === "table" ? (
-        <DataTable
-          columns={filteredColumns as any}
-          data={paginatedLeads as any}
-          totalItems={filteredLeads.length}
-          currentPage={viewAll ? 1 : currentPage}
-          totalPages={viewAll ? 1 : totalPages}
-          onPageChange={handlePageChange}
-          viewingAll={viewAll}
-          onRowClick={(row) => openPanel(row as unknown as ChildWithParent)}
-          rowClassName={(row) => {
-            const r = row as unknown as ChildWithParent;
-            return isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : "";
-          }}
-          emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
-          selectable
-          selectedIndices={selectedIndices}
-          onSelectionChange={setSelectedIndices}
-        />
+        <div className={compact ? "[&_td]:py-1.5 [&_th]:py-2" : ""}>
+          <DataTable
+            columns={filteredColumns as any}
+            data={paginatedLeads as any}
+            totalItems={filteredLeads.length}
+            currentPage={viewAll ? 1 : currentPage}
+            totalPages={viewAll ? 1 : totalPages}
+            onPageChange={handlePageChange}
+            viewingAll={viewAll}
+            onRowClick={(row) => openPanel(row as unknown as ChildWithParent)}
+            rowClassName={(row) => {
+              const r = row as unknown as ChildWithParent;
+              return cn(
+                "group/row",
+                isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : ""
+              );
+            }}
+            emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
+            selectable
+            selectedIndices={selectedIndices}
+            onSelectionChange={setSelectedIndices}
+          />
+        </div>
       ) : (
         <KanbanView leads={filteredLeads} onLeadClick={openPanel} />
       )}
@@ -506,6 +761,12 @@ export default function LeadsPage() {
         <div className="fixed bottom-0 left-64 right-0 bg-card border-t border-border shadow-lg px-6 py-3 flex items-center justify-between z-50">
           <span className="text-sm font-medium">{selectedIndices.size} student{selectedIndices.size > 1 ? "s" : ""} selected</span>
           <div className="flex items-center gap-2">
+            {/* Smart suggestion */}
+            {bulkSuggestion && (
+              <button className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 flex items-center gap-1.5">
+                <ArrowRight size={14} /> {bulkSuggestion.label}
+              </button>
+            )}
             <Popover open={bulkAssignOpen} onOpenChange={setBulkAssignOpen}>
               <PopoverTrigger asChild>
                 <button className="px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">Assign to</button>
@@ -550,7 +811,6 @@ export default function LeadsPage() {
               </SheetHeader>
 
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-                {/* Student Info */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div><span className="text-muted-foreground text-xs block mb-1">Age</span><span className="font-medium">{selectedChild.age}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Level</span><span>{selectedChild.level}</span></div>
@@ -559,7 +819,6 @@ export default function LeadsPage() {
                   {selectedChild.lostReason && <div><span className="text-muted-foreground text-xs block mb-1">Lost Reason</span><span>{selectedChild.lostReason}</span></div>}
                 </div>
 
-                {/* Parent Info */}
                 <div className="border-t border-border pt-4">
                   <h3 className="text-sm font-semibold mb-2">Parent Details</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -572,7 +831,6 @@ export default function LeadsPage() {
                   </div>
                 </div>
 
-                {/* Siblings */}
                 {selectedChild.parent.children.length > 1 && (
                   <div className="border-t border-border pt-4">
                     <h3 className="text-sm font-semibold mb-2">Siblings</h3>
@@ -591,7 +849,6 @@ export default function LeadsPage() {
                   </div>
                 )}
 
-                {/* Notes */}
                 <div className="border-t border-border pt-4">
                   <h3 className="text-sm font-semibold mb-3">Notes</h3>
                   <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
@@ -616,7 +873,6 @@ export default function LeadsPage() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="border-t border-border px-6 py-4 space-y-2">
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Mark Trial Booked</button>

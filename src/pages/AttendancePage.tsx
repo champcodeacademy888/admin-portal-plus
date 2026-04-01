@@ -25,21 +25,37 @@ type AttendanceRow = {
   notes: string;
 };
 
-const data: AttendanceRow[] = [
-  // Regular & makeup classes
-  { student: "Ethan Tan", date: "27 Mar, 15:20", type: "REGULAR", outcome: "ATTENDED", tutor: "Arun Sharma", country: "SG", class: "Python L1 — Sat 10:00", notes: "Good progress" },
-  { student: "Chloe Lim", date: "26 Mar, 15:20", type: "REGULAR", outcome: "ATTENDED", tutor: "Rizal Hakim", country: "MY", class: "Scratch L0 — Sun 14:00", notes: "Completed module" },
-  { student: "Arjun Menon", date: "25 Mar, 15:20", type: "REGULAR", outcome: "ABSENT", tutor: "Maria Santos", country: "PH", class: "Web L2 — Wed 16:30", notes: "—" },
-  { student: "Sofia Reyes", date: "24 Mar, 15:20", type: "REGULAR", outcome: "ATTENDED", tutor: "Dewi Putri", country: "ID", class: "Python L2 — Mon 15:00", notes: "Excellent work" },
-  { student: "Daniel Wong", date: "23 Mar, 15:20", type: "REGULAR", outcome: "NO SHOW", tutor: "Fatima Al-Hassan", country: "AE", class: "Scratch L1 — Tue 10:00", notes: "—" },
-  { student: "Ethan Tan", date: "20 Mar, 15:20", type: "MAKEUP", outcome: "ATTENDED", tutor: "Arun Sharma", country: "SG", class: "Python L1 — Sat 10:00", notes: "Makeup for 13 Mar" },
-  // Trial classes
-  { student: "Priya Nair", date: "28 Mar, 10:00", type: "TRIAL", outcome: "ATTENDED", tutor: "Alex Lim", country: "SG", class: "Python L1 — Sat 10:00", notes: "Very engaged" },
-  { student: "James Wong", date: "20 Mar, 16:30", type: "TRIAL", outcome: "NO SHOW", tutor: "Alex Lim", country: "HK", class: "Web L2 — Wed 16:30", notes: "Reschedule requested" },
-  { student: "Aisha Rahman", date: "22 Mar, 14:00", type: "TRIAL", outcome: "ATTENDED", tutor: "Jamie Koh", country: "MY", class: "Scratch L0 — Sun 14:00", notes: "Parent interested" },
-  { student: "Liam Fernando", date: "19 Mar, 10:00", type: "TRIAL", outcome: "ABSENT", tutor: "Maria Santos", country: "LK", class: "Python L1 — Sat 10:00", notes: "Family emergency" },
-  { student: "Mei Chen", date: "25 Mar, 16:30", type: "TRIAL", outcome: "ATTENDED", tutor: "Dewi Putri", country: "HK", class: "Web L2 — Wed 16:30", notes: "Great first class" },
-];
+const students = ["Ethan Tan","Chloe Lim","Arjun Menon","Sofia Reyes","Daniel Wong","Priya Nair","James Wong","Aisha Rahman","Liam Fernando","Mei Chen","Noah Lee","Isla Ng","Zara Kaur","Leo Santos","Maya Patel","Kai Nakamura","Aria Flores","Ryan Kim","Luna Hassan","Adam Cruz","Hana Suzuki","Yuki Park","Sara Das","Noor Ali","Zain Ramos","Lily Huang","Finn Weber","Jade Choi","Oliver Tan","Emma Lim"];
+const tutors = ["Arun Sharma","Rizal Hakim","Maria Santos","Dewi Putri","Fatima Al-Hassan","Alex Lim","Jamie Koh","Chen Wei","Priya Menon","Tom Garcia"];
+const countryCodes = ["SG","MY","PH","ID","AE","HK","LK"];
+const classes = ["Python L1 — Sat 10:00","Scratch L0 — Sun 14:00","Web L2 — Wed 16:30","Python L2 — Mon 15:00","Scratch L1 — Tue 10:00","Minecraft L1 — Thu 14:00","Roblox L1 — Fri 16:00","Python L3 — Sat 11:00","Scratch L2 — Sun 10:00","Crypto L1 — Wed 14:00"];
+const types: ("REGULAR" | "MAKEUP" | "TRIAL")[] = ["REGULAR","REGULAR","REGULAR","REGULAR","REGULAR","MAKEUP","MAKEUP","TRIAL","TRIAL","TRIAL"];
+const outcomes: ("ATTENDED" | "ABSENT" | "NO SHOW")[] = ["ATTENDED","ATTENDED","ATTENDED","ATTENDED","ATTENDED","ATTENDED","ABSENT","ABSENT","NO SHOW","NO SHOW"];
+const noteOptions = ["Good progress","Completed module","Excellent work","Needs review","—","Makeup for missed class","Very engaged","Parent interested","Great first class","Reschedule requested","Struggling with concepts","Ahead of schedule","—","Collaborative session","First time absent"];
+
+function seededRand(seed: number) {
+  let s = seed;
+  return () => { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+const aRand = seededRand(99);
+const aPick = <T,>(arr: T[]): T => arr[Math.floor(aRand() * arr.length)];
+
+const data: AttendanceRow[] = Array.from({ length: 110 }, (_, i) => {
+  const day = 1 + Math.floor(aRand() * 31);
+  const hour = 9 + Math.floor(aRand() * 9);
+  const min = Math.floor(aRand() * 4) * 15;
+  return {
+    student: aPick(students),
+    date: `${day} Mar, ${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`,
+    type: aPick(types),
+    outcome: aPick(outcomes),
+    tutor: aPick(tutors),
+    country: aPick(countryCodes),
+    class: aPick(classes),
+    notes: aPick(noteOptions),
+  };
+});
 
 const typeVariantMap: Record<string, "makeup" | "regular" | "trial_arranged"> = {
   MAKEUP: "makeup",

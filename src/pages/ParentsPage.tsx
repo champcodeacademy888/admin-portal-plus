@@ -186,6 +186,11 @@ export default function ParentsPage() {
     {
       key: "statuses", header: "Student Statuses", render: (r: Parent) => <ChildStatusSummary children={r.children} />,
     },
+    {
+      key: "psid", header: "PSID", render: (r: Parent) => (
+        <span className="text-xs text-muted-foreground font-mono">{r.psid || "—"}</span>
+      ),
+    },
     { key: "country", header: "Country", render: (r: Parent) => <span className="whitespace-nowrap">{countryFlags[r.country] || "🌍"} {r.country}</span> },
     { key: "channel", header: "Channel", render: (r: Parent) => <ChannelIcon channel={r.channel} /> },
     { key: "lastContacted", header: "Last Contacted", render: (r: Parent) => <span>{r.lastContacted}</span> },

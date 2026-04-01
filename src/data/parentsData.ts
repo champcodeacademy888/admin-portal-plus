@@ -19,6 +19,7 @@ export interface Child {
   level: string;
   status: ChildStatus;
   trialDate?: string;
+  trialTutor?: string;
   trialPassed?: boolean;
   trialOutcomeMarked?: boolean;
   hoursSinceTrial?: number;

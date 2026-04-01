@@ -118,7 +118,7 @@ export default function ParentsPage() {
   const [countryFilter, setCountryFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "name", "children", "statuses", "country", "channel", "lastContacted", "assignedTo", "actions"
+    "name", "children", "statuses", "psid", "country", "channel", "lastContacted", "assignedTo", "actions"
   ]));
   const pageSize = 20;
 

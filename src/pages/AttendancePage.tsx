@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format, parse, isValid } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -152,6 +152,22 @@ export default function AttendancePage() {
     return true;
   });
 
+  const grouped = useMemo(() => {
+    const groups: Record<string, AttendanceRow[]> = {};
+    filtered.forEach(r => {
+      const dateKey = r.date.split(",")[0].trim(); // e.g. "27 Mar"
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(r);
+    });
+    // Sort date keys chronologically
+    const sorted = Object.entries(groups).sort(([a], [b]) => {
+      const da = parseDateStr(a + ", 00:00");
+      const db = parseDateStr(b + ", 00:00");
+      return (da?.getTime() ?? 0) - (db?.getTime() ?? 0);
+    });
+    return sorted;
+  }, [filtered]);
+
   return (
     <div>
       <PageHeader title="Attendance" subtitle="Mark and review class & trial attendance">
@@ -187,7 +203,27 @@ export default function AttendancePage() {
         </div>
       </PageHeader>
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={setActiveTab} />
-      <DataTable columns={columns} data={filtered} totalItems={filtered.length} />
+
+      {grouped.length === 0 ? (
+        <div className="border border-border rounded-lg p-16 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-2xl">📋</div>
+            <p className="text-sm text-muted-foreground">No attendance records found</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {grouped.map(([dateKey, rows]) => (
+            <div key={dateKey}>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-sm font-semibold text-foreground">{dateKey} 2026</h3>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{rows.length} record{rows.length !== 1 ? "s" : ""}</span>
+              </div>
+              <DataTable columns={columns} data={rows} totalItems={rows.length} viewingAll />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

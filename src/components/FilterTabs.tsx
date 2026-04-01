@@ -43,9 +43,7 @@ export default function FilterTabs({ tabs, activeIndex, onChange, subtitle }: Fi
           </button>
         ))}
       </div>
-      {subtitle && i === activeIndex && (
-        <p className="text-xs text-muted-foreground mt-2 ml-1">{subtitle}</p>
-      )}
+      {subtitle && <p className="text-xs text-muted-foreground mt-2 ml-1">{subtitle}</p>}
     </div>
   );
 }

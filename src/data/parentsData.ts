@@ -35,6 +35,7 @@ export interface Parent {
   id: string;
   name: string;
   phone: string;
+  psid?: string;
   country: string;
   channel: "WhatsApp" | "Messenger";
   source: string;

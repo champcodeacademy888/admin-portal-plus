@@ -163,7 +163,7 @@ export default function AttendancePage() {
     const sorted = Object.entries(groups).sort(([a], [b]) => {
       const da = parseDateStr(a + ", 00:00");
       const db = parseDateStr(b + ", 00:00");
-      return (da?.getTime() ?? 0) - (db?.getTime() ?? 0);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
     });
     return sorted;
   }, [filtered]);

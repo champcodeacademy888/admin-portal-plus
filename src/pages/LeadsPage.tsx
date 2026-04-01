@@ -238,24 +238,107 @@ function KanbanView({ leads, onLeadClick }: { leads: ChildWithParent[]; onLeadCl
   );
 }
 
-// EOD Summary banner
-function EODSummaryBanner() {
-  const hour = new Date().getHours();
+// Daily AI Summary component
+function DailySummary() {
   const [dismissed, setDismissed] = useState(false);
-  if (hour < 17 || dismissed) return null;
+  const [expanded, setExpanded] = useState(false);
 
-  const actioned = Math.floor(Math.random() * 30) + 15;
-  const trialsBooked = Math.floor(Math.random() * 8) + 2;
-  const enrolled = Math.floor(Math.random() * 5) + 1;
-  const messengerPending = allLeadChildren.filter(c => c.parent.channel === "Messenger" && needsAttention(c)).length;
+  if (dismissed) return null;
+
+  // Analyze pipeline data
+  const messengerUrgent = allLeadChildren.filter(c => c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 20).length;
+  const trialDoneNeedFollowUp = allLeadChildren.filter(c => c.status === "TRIAL DONE" && (c.hoursSinceTrial ?? 0) >= 24).length;
+  const missedTrials = allLeadChildren.filter(c => c.status === "MISSED TRIAL").length;
+  const trialsToday = allLeadChildren.filter(c => c.status === "TRIAL ARRANGED" && c.trialDate?.startsWith(todayStr)).length;
+  const trialsPastUnmarked = allLeadChildren.filter(c => c.status === "TRIAL ARRANGED" && c.trialPassed && !c.trialOutcomeMarked).length;
+  const newInquiries = allLeadChildren.filter(c => c.status === "INQUIRY" && c.parent.lastContactedHrs <= 24).length;
+  const closedWonTotal = allLeadChildren.filter(c => c.status === "CLOSED WON").length;
+  const lostTotal = allLeadChildren.filter(c => c.status === "LOST").length;
+  const totalLeads = allLeadChildren.length;
+  const activeLeads = allLeadChildren.filter(c => c.status !== "LOST" && c.status !== "CLOSED WON").length;
+  const whatsappStale = allLeadChildren.filter(c => c.parent.channel === "WhatsApp" && c.parent.lastContactedHrs >= 48 && c.status !== "LOST" && c.status !== "CLOSED WON").length;
+
+  // Generate action steps
+  const actions: { priority: "high" | "medium" | "low"; text: string }[] = [];
+
+  if (messengerUrgent > 0) actions.push({ priority: "high", text: `🔴 ${messengerUrgent} Messenger lead${messengerUrgent > 1 ? "s" : ""} with 24hr window expiring — respond immediately to avoid losing contact` });
+  if (trialDoneNeedFollowUp > 0) actions.push({ priority: "high", text: `🟠 ${trialDoneNeedFollowUp} post-trial follow-up${trialDoneNeedFollowUp > 1 ? "s" : ""} overdue — call parents to discuss enrollment packages` });
+  if (trialsPastUnmarked > 0) actions.push({ priority: "high", text: `🟠 ${trialsPastUnmarked} past trial${trialsPastUnmarked > 1 ? "s" : ""} without outcome marked — update status to Trial Done or Missed Trial` });
+  if (missedTrials > 0) actions.push({ priority: "medium", text: `🟡 ${missedTrials} missed trial${missedTrials > 1 ? "s" : ""} — contact to reschedule before leads go cold` });
+  if (trialsToday > 0) actions.push({ priority: "medium", text: `📅 ${trialsToday} trial${trialsToday > 1 ? "s" : ""} scheduled today — confirm attendance with parents` });
+  if (newInquiries > 0) actions.push({ priority: "medium", text: `✨ ${newInquiries} new inquir${newInquiries > 1 ? "ies" : "y"} in the last 24hrs — qualify and move to Lead stage` });
+  if (whatsappStale > 0) actions.push({ priority: "low", text: `📱 ${whatsappStale} WhatsApp lead${whatsappStale > 1 ? "s" : ""} haven't been contacted in 48+ hrs — send a follow-up message` });
+
+  // Summary sentence
+  const conversionRate = totalLeads > 0 ? Math.round((closedWonTotal / totalLeads) * 100) : 0;
 
   return (
-    <div className="mb-4 flex items-center justify-between rounded-lg border border-info/30 bg-info/5 px-4 py-3">
-      <p className="text-sm text-foreground">
-        <span className="font-semibold">Today's summary:</span> {actioned} leads actioned, {trialsBooked} trials booked, {enrolled} enrolled.
-        {messengerPending > 0 && <span className="text-destructive font-medium"> {messengerPending} Messenger leads still need follow-up.</span>}
-      </p>
-      <button onClick={() => setDismissed(true)} className="p-1 hover:bg-muted rounded"><X size={14} /></button>
+    <div className="mb-6 rounded-xl border border-border bg-card overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 bg-primary/5 border-b border-border">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🧠</span>
+          <h3 className="text-sm font-semibold text-foreground">Daily Summary</h3>
+          <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">Auto-generated</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setExpanded(!expanded)} className="text-xs text-primary hover:underline mr-2">
+            {expanded ? "Collapse" : "Show details"}
+          </button>
+          <button onClick={() => setDismissed(true)} className="p-1 hover:bg-muted rounded text-muted-foreground"><X size={14} /></button>
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="px-5 py-3">
+        <p className="text-sm text-foreground">
+          <span className="font-medium">{activeLeads} active leads</span> in pipeline · {closedWonTotal} closed won ({conversionRate}% conversion) · {needsAttentionCount} need attention right now
+          {trialsToday > 0 && <span className="text-primary font-medium"> · {trialsToday} trial{trialsToday > 1 ? "s" : ""} today</span>}
+        </p>
+      </div>
+
+      {/* Action steps */}
+      {expanded && actions.length > 0 && (
+        <div className="px-5 pb-4 space-y-2 border-t border-border pt-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Recommended next steps</p>
+          {actions.map((action, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex items-start gap-2 rounded-lg px-3 py-2 text-sm",
+                action.priority === "high" ? "bg-destructive/5" :
+                action.priority === "medium" ? "bg-warning/5" : "bg-muted/50"
+              )}
+            >
+              <span className="mt-0.5 text-xs font-semibold rounded px-1.5 py-0.5 shrink-0" style={{
+                background: action.priority === "high" ? "hsl(var(--destructive) / 0.15)" :
+                  action.priority === "medium" ? "hsl(var(--warning) / 0.15)" : "hsl(var(--muted))",
+                color: action.priority === "high" ? "hsl(var(--destructive))" :
+                  action.priority === "medium" ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))",
+              }}>
+                {action.priority === "high" ? "URGENT" : action.priority === "medium" ? "ACTION" : "LOW"}
+              </span>
+              <span>{action.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!expanded && actions.length > 0 && (
+        <div className="px-5 pb-3">
+          <p className="text-xs text-muted-foreground">
+            {actions.filter(a => a.priority === "high").length > 0 && (
+              <span className="text-destructive font-medium">{actions.filter(a => a.priority === "high").length} urgent action{actions.filter(a => a.priority === "high").length > 1 ? "s" : ""}</span>
+            )}
+            {actions.filter(a => a.priority === "high").length > 0 && actions.filter(a => a.priority !== "high").length > 0 && " · "}
+            {actions.filter(a => a.priority !== "high").length > 0 && (
+              <span>{actions.filter(a => a.priority !== "high").length} more recommendation{actions.filter(a => a.priority !== "high").length > 1 ? "s" : ""}</span>
+            )}
+            {" — "}
+            <button onClick={() => setExpanded(true)} className="text-primary hover:underline">view all</button>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

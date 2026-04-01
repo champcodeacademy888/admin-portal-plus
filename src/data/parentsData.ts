@@ -85,6 +85,7 @@ const sources = ["Meta Ads (Facebook)","Meta Ads (WhatsApp)","Meta Ads (Form)","
 const childStatuses: ChildStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL DONE","MISSED TRIAL","ENROLLED","CLOSED WON","CLOSED WON","LOST"];
 const aiStatuses: AIStatus[] = ["active","active","admin","completed"];
 const admins = ["Sarah A.","James L.","Maria G.","David K."];
+const tutors = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
 const levels = ["—","Beginner","Intermediate","Advanced"];
 const packageInterests = ["8 lessons / month","4 lessons / month","Trial only","16 lessons / month","10 lessons / month"];
 const lostReasons = ["Price","Timing","Chose competitor","Not interested","No response"];

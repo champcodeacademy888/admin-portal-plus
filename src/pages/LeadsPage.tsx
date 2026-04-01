@@ -535,71 +535,94 @@ export default function LeadsPage() {
       key: "actions", header: "", render: (r: ChildWithParent, _idx?: number) => {
         const rowIdx = paginatedLeads.indexOf(r);
         return (
-          <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-            {/* WhatsApp */}
-            <button
-              className="p-1.5 rounded-md hover:bg-success/10 text-success"
-              title="WhatsApp"
-              onClick={() => {
-                const phone = r.parent.phone.replace(/\s+/g, "");
-                window.open(`https://wa.me/${phone}`, "_blank");
-              }}
-            >
-              <Phone size={15} />
-            </button>
-            {/* Messenger */}
-            <button
-              className="p-1.5 rounded-md hover:bg-info/10 text-info"
-              title="Messenger"
-              onClick={() => window.open("https://m.me/", "_blank")}
-            >
-              <MessageCircle size={15} />
-            </button>
-            {/* Takeover */}
-            <button
-              className="p-1.5 rounded-md hover:bg-purple-500/10 text-purple-500"
-              title="Take over from AI"
-            >
-              <UserCheck size={15} />
-            </button>
-            {/* Quick advance */}
-            {nextStatusMap[r.status] && (
-              <button
-                className="p-1.5 rounded-md hover:bg-success/10 text-success"
-                title={`Advance to ${nextStatusMap[r.status]}`}
-              >
-                <CheckCircle size={15} />
-              </button>
-            )}
-            {/* Mark as lost (inline) */}
-            {r.status !== "LOST" && r.status !== "CLOSED WON" && (
-              <div className="relative">
-                <button
-                  className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive"
-                  title="Mark as Lost"
-                  onClick={() => setInlineLostIndex(inlineLostIndex === rowIdx ? null : rowIdx)}
-                >
-                  <XCircle size={15} />
-                </button>
-                {inlineLostIndex === rowIdx && (
-                  <div className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg p-2 w-40">
-                    <p className="text-[10px] text-muted-foreground mb-1 font-medium">Lost reason:</p>
-                    {LOST_REASONS.filter(r => r !== "Other").map((reason) => (
+          <TooltipProvider delayDuration={300}>
+            <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+              {/* WhatsApp */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className="p-1.5 rounded-md hover:bg-success/10 text-success"
+                    onClick={() => {
+                      const phone = r.parent.phone.replace(/\s+/g, "");
+                      window.open(`https://wa.me/${phone}`, "_blank");
+                    }}
+                  >
+                    <Phone size={15} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top"><p>WhatsApp</p></TooltipContent>
+              </Tooltip>
+              {/* Messenger */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className="p-1.5 rounded-md hover:bg-info/10 text-info"
+                    onClick={() => window.open("https://m.me/", "_blank")}
+                  >
+                    <MessageCircle size={15} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top"><p>Messenger</p></TooltipContent>
+              </Tooltip>
+              {/* Takeover */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-1.5 rounded-md hover:bg-purple-500/10 text-purple-500">
+                    <UserCheck size={15} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top"><p>Take over from AI</p></TooltipContent>
+              </Tooltip>
+              {/* Quick advance */}
+              {nextStatusMap[r.status] && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="p-1.5 rounded-md hover:bg-success/10 text-success">
+                      <CheckCircle size={15} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top"><p>Advance to {nextStatusMap[r.status]}</p></TooltipContent>
+                </Tooltip>
+              )}
+              {/* Mark as lost (inline) */}
+              {r.status !== "LOST" && r.status !== "CLOSED WON" && (
+                <div className="relative">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <button
-                        key={reason}
-                        className="w-full text-left px-2 py-1.5 text-xs hover:bg-muted rounded-md"
-                        onClick={() => setInlineLostIndex(null)}
+                        className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive"
+                        onClick={() => setInlineLostIndex(inlineLostIndex === rowIdx ? null : rowIdx)}
                       >
-                        {reason}
+                        <XCircle size={15} />
                       </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {/* View */}
-            <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" title="View" onClick={() => openPanel(r)}><Eye size={15} /></button>
-          </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top"><p>Mark as Lost</p></TooltipContent>
+                  </Tooltip>
+                  {inlineLostIndex === rowIdx && (
+                    <div className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg p-2 w-40">
+                      <p className="text-[10px] text-muted-foreground mb-1 font-medium">Lost reason:</p>
+                      {LOST_REASONS.filter(r => r !== "Other").map((reason) => (
+                        <button
+                          key={reason}
+                          className="w-full text-left px-2 py-1.5 text-xs hover:bg-muted rounded-md"
+                          onClick={() => setInlineLostIndex(null)}
+                        >
+                          {reason}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* View */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" onClick={() => openPanel(r)}><Eye size={15} /></button>
+                </TooltipTrigger>
+                <TooltipContent side="top"><p>View details</p></TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         );
       },
     },

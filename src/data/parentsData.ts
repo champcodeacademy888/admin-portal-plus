@@ -160,16 +160,27 @@ function generateParents(): Parent[] {
         const d = new Date(today);
         d.setDate(d.getDate() + dayOffset);
         child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
+        child.trialTutor = pick(tutors);
         child.trialPassed = dayOffset < 0;
         child.trialOutcomeMarked = dayOffset < 0 ? rand() > 0.5 : false;
       }
 
       if (childStatus === "TRIAL DONE") {
+        const dayOffset = randInt(-10, -1);
+        const d = new Date(today);
+        d.setDate(d.getDate() + dayOffset);
+        child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
+        child.trialTutor = pick(tutors);
         child.hoursSinceTrial = randInt(2, 96);
         child.packageInterest = pick(packageInterests);
       }
 
       if (childStatus === "ENROLLED" || childStatus === "CLOSED WON") {
+        const dayOffset = randInt(-30, -5);
+        const d = new Date(today);
+        d.setDate(d.getDate() + dayOffset);
+        child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
+        child.trialTutor = pick(tutors);
         child.packageInterest = pick(packageInterests);
         child.enrolledDate = `${randInt(1, 28)} Mar 2026`;
         child.handedOff = rand() > 0.5;

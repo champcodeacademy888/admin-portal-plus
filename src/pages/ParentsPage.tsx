@@ -98,6 +98,7 @@ const allColumnKeys = [
   { key: "name", label: "Parent" },
   { key: "children", label: "Children" },
   { key: "statuses", label: "Student Statuses" },
+  { key: "psid", label: "PSID" },
   { key: "country", label: "Country" },
   { key: "channel", label: "Channel" },
   { key: "lastContacted", label: "Last Contacted" },
@@ -117,7 +118,7 @@ export default function ParentsPage() {
   const [countryFilter, setCountryFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "name", "children", "statuses", "country", "channel", "lastContacted", "assignedTo", "actions"
+    "name", "children", "statuses", "psid", "country", "channel", "lastContacted", "assignedTo", "actions"
   ]));
   const pageSize = 20;
 
@@ -185,6 +186,11 @@ export default function ParentsPage() {
     },
     {
       key: "statuses", header: "Student Statuses", render: (r: Parent) => <ChildStatusSummary children={r.children} />,
+    },
+    {
+      key: "psid", header: "PSID", render: (r: Parent) => (
+        <span className="text-xs text-muted-foreground font-mono">{r.psid || "—"}</span>
+      ),
     },
     { key: "country", header: "Country", render: (r: Parent) => <span className="whitespace-nowrap">{countryFlags[r.country] || "🌍"} {r.country}</span> },
     { key: "channel", header: "Channel", render: (r: Parent) => <ChannelIcon channel={r.channel} /> },

@@ -35,6 +35,7 @@ export interface Parent {
   id: string;
   name: string;
   phone: string;
+  psid?: string;
   country: string;
   channel: "WhatsApp" | "Messenger";
   source: string;
@@ -204,7 +205,8 @@ function generateParents(): Parent[] {
       });
     }
 
-    result.push({ id, name, phone, country, channel, source, assignedTo, aiAgent, lastContacted, lastContactedHrs, children, notes });
+    const psid = channel === "Messenger" ? `${randInt(1000000000, 9999999999)}` : undefined;
+    result.push({ id, name, phone, psid, country, channel, source, assignedTo, aiAgent, lastContacted, lastContactedHrs, children, notes });
   }
 
   return result;

@@ -406,7 +406,7 @@ export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [compact, setCompact] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "studentId", "student", "parent", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "assignedTo", "urgency", "actions"
+    "studentId", "student", "parent", "psid", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "assignedTo", "urgency", "actions"
   ]));
   const [columnsOpen, setColumnsOpen] = useState(false);
 
@@ -414,6 +414,7 @@ export default function LeadsPage() {
     { key: "studentId", label: "Student ID" },
     { key: "student", label: "Student" },
     { key: "parent", label: "Parent" },
+    { key: "psid", label: "PSID" },
     { key: "status", label: "Status" },
     { key: "country", label: "Country" },
     { key: "channel", label: "Channel" },
@@ -575,6 +576,11 @@ export default function LeadsPage() {
             <span className="font-medium">{r.parent.name}</span>
           </div>
         </div>
+      ),
+    },
+    {
+      key: "psid", header: "PSID", render: (r: ChildWithParent) => (
+        <span className="text-xs text-muted-foreground font-mono">{r.parent.psid || "—"}</span>
       ),
     },
     {

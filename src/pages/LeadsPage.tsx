@@ -849,6 +849,7 @@ export default function LeadsPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Age</span><span className="font-medium">{selectedChild.age}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Level</span><span>{selectedChild.level}</span></div>
                   {selectedChild.trialDate && <div><span className="text-muted-foreground text-xs block mb-1">Trial Date</span><span className={trialDateColor(selectedChild)}>{selectedChild.trialDate}</span></div>}
+                  {selectedChild.trialTutor && <div><span className="text-muted-foreground text-xs block mb-1">Trial Tutor</span><span>{selectedChild.trialTutor}</span></div>}
                   {selectedChild.packageInterest && <div><span className="text-muted-foreground text-xs block mb-1">Package Interest</span><span>{selectedChild.packageInterest}</span></div>}
                   {selectedChild.lostReason && <div><span className="text-muted-foreground text-xs block mb-1">Lost Reason</span><span>{selectedChild.lostReason}</span></div>}
                 </div>

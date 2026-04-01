@@ -414,6 +414,7 @@ export default function LeadsPage() {
     { key: "studentId", label: "Student ID" },
     { key: "student", label: "Student" },
     { key: "parent", label: "Parent" },
+    { key: "psid", label: "PSID" },
     { key: "status", label: "Status" },
     { key: "country", label: "Country" },
     { key: "channel", label: "Channel" },

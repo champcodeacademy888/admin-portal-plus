@@ -3,6 +3,15 @@ import { format } from "date-fns";
 export type ChildStatus = "INQUIRY" | "LEAD" | "TRIAL ARRANGED" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "CLOSED WON" | "LOST";
 export type AIStatus = "active" | "admin" | "completed";
 
+export const programs = [
+  "Scratch","Basic Computer Minecraft","Basic Computer Roblox","Minecraft","Minecraft Level 2",
+  "Minecraft Project 1","Minecraft Project 2","Minecraft Project 3","Minecraft Project 4","Minecraft Project 5",
+  "Roblox","Roblox AI Debugging","Roblox Level 2","Roblox Project 1","Roblox Project 2",
+  "Roblox Project 3","Roblox Project 4","Roblox Project 5","Website Design","Python","Crypto",
+];
+
+export const lessonDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
 export interface Child {
   id: string;
   name: string;
@@ -17,6 +26,8 @@ export interface Child {
   lostReason?: string;
   enrolledDate?: string;
   handedOff?: boolean;
+  program?: string;
+  lessonDay?: string;
 }
 
 export interface Parent {
@@ -160,6 +171,8 @@ function generateParents(): Parent[] {
         child.packageInterest = pick(packageInterests);
         child.enrolledDate = `${randInt(1, 28)} Mar 2026`;
         child.handedOff = rand() > 0.5;
+        child.program = pick(programs);
+        child.lessonDay = pick(lessonDays);
       }
 
       if (childStatus === "LOST") {

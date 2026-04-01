@@ -19,6 +19,7 @@ export interface Child {
   level: string;
   status: ChildStatus;
   trialDate?: string;
+  trialTutor?: string;
   trialPassed?: boolean;
   trialOutcomeMarked?: boolean;
   hoursSinceTrial?: number;
@@ -84,6 +85,7 @@ const sources = ["Meta Ads (Facebook)","Meta Ads (WhatsApp)","Meta Ads (Form)","
 const childStatuses: ChildStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL DONE","MISSED TRIAL","ENROLLED","CLOSED WON","CLOSED WON","LOST"];
 const aiStatuses: AIStatus[] = ["active","active","admin","completed"];
 const admins = ["Sarah A.","James L.","Maria G.","David K."];
+const tutors = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
 const levels = ["—","Beginner","Intermediate","Advanced"];
 const packageInterests = ["8 lessons / month","4 lessons / month","Trial only","16 lessons / month","10 lessons / month"];
 const lostReasons = ["Price","Timing","Chose competitor","Not interested","No response"];
@@ -158,16 +160,27 @@ function generateParents(): Parent[] {
         const d = new Date(today);
         d.setDate(d.getDate() + dayOffset);
         child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
+        child.trialTutor = pick(tutors);
         child.trialPassed = dayOffset < 0;
         child.trialOutcomeMarked = dayOffset < 0 ? rand() > 0.5 : false;
       }
 
       if (childStatus === "TRIAL DONE") {
+        const dayOffset = randInt(-10, -1);
+        const d = new Date(today);
+        d.setDate(d.getDate() + dayOffset);
+        child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
+        child.trialTutor = pick(tutors);
         child.hoursSinceTrial = randInt(2, 96);
         child.packageInterest = pick(packageInterests);
       }
 
       if (childStatus === "ENROLLED" || childStatus === "CLOSED WON") {
+        const dayOffset = randInt(-30, -5);
+        const d = new Date(today);
+        d.setDate(d.getDate() + dayOffset);
+        child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
+        child.trialTutor = pick(tutors);
         child.packageInterest = pick(packageInterests);
         child.enrolledDate = `${randInt(1, 28)} Mar 2026`;
         child.handedOff = rand() > 0.5;

@@ -323,11 +323,12 @@ export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [compact, setCompact] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "student", "parent", "status", "country", "channel", "lastContacted", "assignedTo", "urgency", "actions"
+    "studentId", "student", "parent", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "assignedTo", "urgency", "actions"
   ]));
   const [columnsOpen, setColumnsOpen] = useState(false);
 
   const allColumnKeys = [
+    { key: "studentId", label: "Student ID" },
     { key: "student", label: "Student" },
     { key: "parent", label: "Parent" },
     { key: "status", label: "Status" },
@@ -338,6 +339,7 @@ export default function LeadsPage() {
     { key: "aiAgent", label: "AI Agent" },
     { key: "assignedTo", label: "Assigned To" },
     { key: "trialDate", label: "Trial Date" },
+    { key: "trialTutor", label: "Trial Tutor" },
     { key: "packageInterest", label: "Package Interest" },
     { key: "age", label: "Age" },
     { key: "level", label: "Level" },
@@ -447,10 +449,15 @@ export default function LeadsPage() {
 
   // Determine visible columns based on compact mode
   const effectiveVisibleColumns = compact
-    ? new Set(["student", "status", "country", "channel", "lastContacted", "urgency", "actions"])
+    ? new Set(["studentId", "student", "status", "country", "channel", "lastContacted", "urgency", "actions"])
     : visibleColumns;
 
   const columns = [
+    {
+      key: "studentId", header: "ID", render: (r: ChildWithParent) => (
+        <span className="text-xs text-muted-foreground font-mono">{r.id}</span>
+      ),
+    },
     {
       key: "student", header: "Student", render: (r: ChildWithParent) => compact ? (
         <HoverCard openDelay={500}>
@@ -467,10 +474,7 @@ export default function LeadsPage() {
         <HoverCard openDelay={500}>
           <HoverCardTrigger asChild>
             <div className="cursor-default">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
-                <span className="font-medium">{r.name}</span>
-              </div>
+              <span className="font-medium">{r.name}</span>
               <div className="text-[11px] text-muted-foreground mt-0.5">Age {r.age} · {r.level}</div>
             </div>
           </HoverCardTrigger>
@@ -519,8 +523,14 @@ export default function LeadsPage() {
     { key: "assignedTo", header: "Assigned To", render: (r: ChildWithParent) => <span>{r.parent.assignedTo}</span> },
     {
       key: "trialDate", header: "Trial Date", render: (r: ChildWithParent) => {
-        if (r.status !== "TRIAL ARRANGED" || !r.trialDate) return <span className="text-muted-foreground">—</span>;
+        if (!r.trialDate) return <span className="text-muted-foreground">—</span>;
         return <span className={trialDateColor(r)}>{r.trialDate}</span>;
+      },
+    },
+    {
+      key: "trialTutor", header: "Trial Tutor", render: (r: ChildWithParent) => {
+        if (!r.trialTutor) return <span className="text-muted-foreground">—</span>;
+        return <span>{r.trialTutor}</span>;
       },
     },
     {
@@ -839,6 +849,7 @@ export default function LeadsPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Age</span><span className="font-medium">{selectedChild.age}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Level</span><span>{selectedChild.level}</span></div>
                   {selectedChild.trialDate && <div><span className="text-muted-foreground text-xs block mb-1">Trial Date</span><span className={trialDateColor(selectedChild)}>{selectedChild.trialDate}</span></div>}
+                  {selectedChild.trialTutor && <div><span className="text-muted-foreground text-xs block mb-1">Trial Tutor</span><span>{selectedChild.trialTutor}</span></div>}
                   {selectedChild.packageInterest && <div><span className="text-muted-foreground text-xs block mb-1">Package Interest</span><span>{selectedChild.packageInterest}</span></div>}
                   {selectedChild.lostReason && <div><span className="text-muted-foreground text-xs block mb-1">Lost Reason</span><span>{selectedChild.lostReason}</span></div>}
                 </div>

@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import PageHeader from "@/components/PageHeader";
 import FilterTabs from "@/components/FilterTabs";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, Phone, MessageCircle, Eye, ChevronRight, Users } from "lucide-react";
+import { Search, Phone, MessageCircle, Eye, Users, SlidersHorizontal, Columns3, Minimize2, Maximize2, TrendingUp, UserCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { parents, countryFlags, type Parent, type Child } from "@/data/parentsData";
 
 const statusVariantMap: Record<string, string> = {
@@ -58,47 +63,46 @@ const tabFilters: Record<string, (p: Parent) => boolean> = {
   "Has Lost": p => p.children.some(c => c.status === "LOST"),
 };
 
-const columns = [
-  {
-    key: "name", header: "Parent", render: (r: Parent) => (
-      <div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
-          <span className="font-medium">{r.name}</span>
-        </div>
-        <div className="text-[11px] text-muted-foreground mt-0.5">
-          {r.children.length} {r.children.length === 1 ? "child" : "children"}
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: "children", header: "Children", render: (r: Parent) => (
-      <div className="space-y-0.5">
-        {r.children.map((c, i) => (
-          <div key={i} className="text-xs">
-            <span className="font-medium">{c.name}</span>
-            <span className="text-muted-foreground ml-1">({c.age}y)</span>
+// Stats bar
+function ParentStatsBar() {
+  const totalParents = parents.length;
+  const totalChildren = parents.reduce((sum, p) => sum + p.children.length, 0);
+  const enrolledChildren = parents.reduce((sum, p) => sum + p.children.filter(c => c.status === "ENROLLED" || c.status === "CLOSED WON").length, 0);
+  const trialChildren = parents.reduce((sum, p) => sum + p.children.filter(c => ["TRIAL ARRANGED", "TRIAL DONE"].includes(c.status)).length, 0);
+
+  const stats = [
+    { label: "Total Parents", value: totalParents, icon: Users },
+    { label: "Total Students", value: totalChildren, icon: Users },
+    { label: "Enrolled", value: enrolledChildren, icon: TrendingUp },
+    { label: "In Trial", value: trialChildren, icon: TrendingUp },
+  ];
+
+  return (
+    <div className="grid grid-cols-4 gap-4 mb-6">
+      {stats.map((s) => (
+        <div key={s.label} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <s.icon size={18} />
           </div>
-        ))}
-      </div>
-    ),
-  },
-  {
-    key: "statuses", header: "Student Statuses", render: (r: Parent) => <ChildStatusSummary children={r.children} />,
-  },
-  { key: "country", header: "Country", render: (r: Parent) => <span className="whitespace-nowrap">{countryFlags[r.country] || "🌍"} {r.country}</span> },
-  { key: "channel", header: "Channel", render: (r: Parent) => <ChannelIcon channel={r.channel} /> },
-  { key: "lastContacted", header: "Last Contacted", render: (r: Parent) => <span>{r.lastContacted}</span> },
-  { key: "assignedTo", header: "Assigned To" },
-  {
-    key: "actions", header: "", render: (r: Parent) => (
-      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-        <button className="p-1.5 rounded-md hover:bg-muted text-success" title="WhatsApp"><Phone size={15} /></button>
-        <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" title="View"><Eye size={15} /></button>
-      </div>
-    ),
-  },
+          <div>
+            <p className="text-xs text-muted-foreground">{s.label}</p>
+            <p className="text-lg font-bold text-foreground">{s.value}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const allColumnKeys = [
+  { key: "name", label: "Parent" },
+  { key: "children", label: "Children" },
+  { key: "statuses", label: "Student Statuses" },
+  { key: "country", label: "Country" },
+  { key: "channel", label: "Channel" },
+  { key: "lastContacted", label: "Last Contacted" },
+  { key: "assignedTo", label: "Assigned To" },
+  { key: "actions", label: "Actions" },
 ];
 
 export default function ParentsPage() {
@@ -107,32 +111,193 @@ export default function ParentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [columnsOpen, setColumnsOpen] = useState(false);
+  const [countryFilter, setCountryFilter] = useState("all");
+  const [channelFilter, setChannelFilter] = useState("all");
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
+    "name", "children", "statuses", "country", "channel", "lastContacted", "assignedTo", "actions"
+  ]));
   const pageSize = 20;
 
-  const filtered = parents.filter(p => {
-    const tabLabel = tabs[activeTab].label;
-    if (!tabFilters[tabLabel](p)) return false;
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.children.some(c => c.name.toLowerCase().includes(search.toLowerCase()))) return false;
-    return true;
-  });
+  const toggleColumn = (key: string) => {
+    setVisibleColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const filtered = useMemo(() => {
+    return parents.filter(p => {
+      const tabLabel = tabs[activeTab].label;
+      if (!tabFilters[tabLabel](p)) return false;
+      if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.children.some(c => c.name.toLowerCase().includes(search.toLowerCase()))) return false;
+      if (countryFilter !== "all" && p.country !== countryFilter) return false;
+      if (channelFilter !== "all" && p.channel !== channelFilter) return false;
+      return true;
+    });
+  }, [activeTab, search, countryFilter, channelFilter]);
 
   const viewAll = currentPage === 0;
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const paginated = viewAll ? filtered : filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const compactPageSize = compact ? 25 : pageSize;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / compactPageSize));
+  const paginated = viewAll ? filtered : filtered.slice((currentPage - 1) * compactPageSize, currentPage * compactPageSize);
 
   const openPanel = (parent: Parent) => {
     setSelectedParent(parent);
     setPanelOpen(true);
   };
 
+  const effectiveVisibleColumns = compact
+    ? new Set(["name", "statuses", "country", "channel", "lastContacted", "actions"])
+    : visibleColumns;
+
+  const columns = [
+    {
+      key: "name", header: "Parent", render: (r: Parent) => (
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
+            <span className="font-medium">{r.name}</span>
+          </div>
+          {!compact && (
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              {r.children.length} {r.children.length === 1 ? "child" : "children"}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "children", header: "Children", render: (r: Parent) => (
+        <div className="space-y-0.5">
+          {r.children.map((c, i) => (
+            <div key={i} className="text-xs">
+              <span className="font-medium">{c.name}</span>
+              <span className="text-muted-foreground ml-1">({c.age}y)</span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "statuses", header: "Student Statuses", render: (r: Parent) => <ChildStatusSummary children={r.children} />,
+    },
+    { key: "country", header: "Country", render: (r: Parent) => <span className="whitespace-nowrap">{countryFlags[r.country] || "🌍"} {r.country}</span> },
+    { key: "channel", header: "Channel", render: (r: Parent) => <ChannelIcon channel={r.channel} /> },
+    { key: "lastContacted", header: "Last Contacted", render: (r: Parent) => <span>{r.lastContacted}</span> },
+    { key: "assignedTo", header: "Assigned To" },
+    {
+      key: "actions", header: "", render: (r: Parent) => (
+        <TooltipProvider delayDuration={300}>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="p-1.5 rounded-md hover:bg-success/10 text-success"
+                  onClick={() => {
+                    const phone = r.phone.replace(/\s+/g, "");
+                    window.open(`https://wa.me/${phone}`, "_blank");
+                  }}
+                >
+                  <Phone size={15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top"><p>WhatsApp</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="p-1.5 rounded-md hover:bg-info/10 text-info" onClick={() => window.open("https://m.me/", "_blank")}>
+                  <MessageCircle size={15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top"><p>Messenger</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" onClick={() => openPanel(r)}>
+                  <Eye size={15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top"><p>View details</p></TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+      ),
+    },
+  ];
+
+  const filteredColumns = columns.filter(col => effectiveVisibleColumns.has(col.key));
+
   return (
     <div>
       <PageHeader title="Parents" subtitle="Manage parents and their children's enrolment pipeline">
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
-            <Users size={13} />
-            {parents.length} parents · {parents.reduce((sum, p) => sum + p.children.length, 0)} students
-          </span>
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">
+                <SlidersHorizontal size={14} /> Filters
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Country</label>
+                  <Select value={countryFilter} onValueChange={setCountryFilter}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Countries</SelectItem>
+                      {Object.keys(countryFlags).map((c) => <SelectItem key={c} value={c}>{countryFlags[c]} {c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Channel</label>
+                  <Select value={channelFilter} onValueChange={setChannelFilter}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Channels</SelectItem>
+                      <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                      <SelectItem value="Messenger">Messenger</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <button onClick={() => { setCountryFilter("all"); setChannelFilter("all"); }} className="text-xs text-primary hover:underline">Reset filters</button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Popover open={columnsOpen} onOpenChange={setColumnsOpen}>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">
+                <Columns3 size={14} /> Columns
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52" align="end">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Toggle columns</p>
+                {allColumnKeys.map((col) => (
+                  <label key={col.key} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm">
+                    <Checkbox checked={visibleColumns.has(col.key)} onCheckedChange={() => toggleColumn(col.key)} />
+                    {col.label}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <button
+            onClick={() => setCompact(!compact)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 border rounded-lg text-sm transition-colors",
+              compact ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted text-muted-foreground"
+            )}
+            title={compact ? "Standard view" : "Compact view"}
+          >
+            {compact ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+            {compact ? "Standard" : "Compact"}
+          </button>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -145,19 +310,24 @@ export default function ParentsPage() {
         </div>
       </PageHeader>
 
+      <ParentStatsBar />
+
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={(i) => { setActiveTab(i); setCurrentPage(1); }} />
 
-      <DataTable
-        columns={columns as any}
-        data={paginated as any}
-        totalItems={filtered.length}
-        currentPage={viewAll ? 1 : currentPage}
-        totalPages={viewAll ? 1 : totalPages}
-        onPageChange={(p) => { if (p === 0) setCurrentPage(0); else setCurrentPage(Math.max(1, Math.min(p, totalPages))); }}
-        viewingAll={viewAll}
-        onRowClick={(row) => openPanel(row as unknown as Parent)}
-        emptyMessage="No parents found"
-      />
+      <div className={compact ? "[&_td]:py-1.5 [&_th]:py-2" : ""}>
+        <DataTable
+          columns={filteredColumns as any}
+          data={paginated as any}
+          totalItems={filtered.length}
+          currentPage={viewAll ? 1 : currentPage}
+          totalPages={viewAll ? 1 : totalPages}
+          onPageChange={(p) => { if (p === 0) setCurrentPage(0); else setCurrentPage(Math.max(1, Math.min(p, totalPages))); }}
+          viewingAll={viewAll}
+          onRowClick={(row) => openPanel(row as unknown as Parent)}
+          rowClassName={() => "group/row"}
+          emptyMessage="No parents found"
+        />
+      </div>
 
       {/* Parent Detail Side Panel */}
       <Sheet open={panelOpen} onOpenChange={setPanelOpen}>

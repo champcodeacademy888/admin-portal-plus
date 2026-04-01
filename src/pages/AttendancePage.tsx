@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { format, parse, isValid } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import PageHeader from "@/components/PageHeader";
 import FilterTabs from "@/components/FilterTabs";
 import DataTable from "@/components/DataTable";
@@ -106,13 +112,64 @@ const columns = [
   { key: "notes", header: "Notes" },
 ];
 
+function parseDateStr(dateStr: string): Date | null {
+  // dateStr like "27 Mar, 15:20" — parse just the date part
+  const parts = dateStr.split(",")[0].trim();
+  const d = parse(parts + " 2026", "d MMM yyyy", new Date());
+  return isValid(d) ? d : null;
+}
+
+function isSameDay(d1: Date, d2: Date) {
+  return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+}
+
 export default function AttendancePage() {
   const [activeTab, setActiveTab] = useState(0);
-  const filtered = data.filter(tabFilterFn(activeTab));
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+
+  const filtered = data.filter(r => {
+    if (!tabFilterFn(activeTab)(r)) return false;
+    if (dateFilter) {
+      const rowDate = parseDateStr(r.date);
+      if (!rowDate || !isSameDay(rowDate, dateFilter)) return false;
+    }
+    return true;
+  });
 
   return (
     <div>
-      <PageHeader title="Attendance" subtitle="Mark and review class & trial attendance" />
+      <PageHeader title="Attendance" subtitle="Mark and review class & trial attendance">
+        <div className="flex items-center gap-3">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[200px] justify-start text-left font-normal",
+                  !dateFilter && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateFilter ? format(dateFilter, "PPP") : "Filter by date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFilter}
+                onSelect={setDateFilter}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          {dateFilter && (
+            <Button variant="ghost" size="sm" onClick={() => setDateFilter(undefined)} className="text-muted-foreground">
+              Clear
+            </Button>
+          )}
+        </div>
+      </PageHeader>
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={setActiveTab} />
       <DataTable columns={columns} data={filtered} totalItems={filtered.length} />
     </div>

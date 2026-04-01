@@ -98,6 +98,7 @@ const allColumnKeys = [
   { key: "name", label: "Parent" },
   { key: "children", label: "Children" },
   { key: "statuses", label: "Student Statuses" },
+  { key: "psid", label: "PSID" },
   { key: "country", label: "Country" },
   { key: "channel", label: "Channel" },
   { key: "lastContacted", label: "Last Contacted" },

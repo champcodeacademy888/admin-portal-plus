@@ -454,6 +454,11 @@ export default function LeadsPage() {
 
   const columns = [
     {
+      key: "studentId", header: "ID", render: (r: ChildWithParent) => (
+        <span className="text-xs text-muted-foreground font-mono">{r.id}</span>
+      ),
+    },
+    {
       key: "student", header: "Student", render: (r: ChildWithParent) => compact ? (
         <HoverCard openDelay={500}>
           <HoverCardTrigger asChild>
@@ -469,10 +474,7 @@ export default function LeadsPage() {
         <HoverCard openDelay={500}>
           <HoverCardTrigger asChild>
             <div className="cursor-default">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
-                <span className="font-medium">{r.name}</span>
-              </div>
+              <span className="font-medium">{r.name}</span>
               <div className="text-[11px] text-muted-foreground mt-0.5">Age {r.age} · {r.level}</div>
             </div>
           </HoverCardTrigger>
@@ -521,8 +523,14 @@ export default function LeadsPage() {
     { key: "assignedTo", header: "Assigned To", render: (r: ChildWithParent) => <span>{r.parent.assignedTo}</span> },
     {
       key: "trialDate", header: "Trial Date", render: (r: ChildWithParent) => {
-        if (r.status !== "TRIAL ARRANGED" || !r.trialDate) return <span className="text-muted-foreground">—</span>;
+        if (!r.trialDate) return <span className="text-muted-foreground">—</span>;
         return <span className={trialDateColor(r)}>{r.trialDate}</span>;
+      },
+    },
+    {
+      key: "trialTutor", header: "Trial Tutor", render: (r: ChildWithParent) => {
+        if (!r.trialTutor) return <span className="text-muted-foreground">—</span>;
+        return <span>{r.trialTutor}</span>;
       },
     },
     {

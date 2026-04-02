@@ -2,8 +2,6 @@ import { useState, useMemo } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Search } from "lucide-react";
 import { tutors, tutorCountryFlags } from "@/data/tutorsData";
-import { calendarRecords } from "@/data/calendarData";
-import { getAllChildren } from "@/data/parentsData";
 
 export default function TutorsPage() {
   const [search, setSearch] = useState("");

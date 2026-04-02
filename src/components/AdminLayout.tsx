@@ -13,6 +13,7 @@ const menuItems = [
   { label: "Parents", icon: Users, path: "/parents" },
   { label: "Leads", icon: ClipboardList, path: "/leads" },
   { label: "Enrolments", icon: UserPlus, path: "/enrolments" },
+  { label: "Tutors", icon: GraduationCap, path: "/tutors" },
   { label: "Calendar", icon: Calendar, path: "/calendar" },
   { label: "Packages", icon: Package, path: "/packages" },
   { label: "Student Packages", icon: Package, path: "/student-packages" },

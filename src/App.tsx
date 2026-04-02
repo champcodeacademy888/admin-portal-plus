@@ -39,6 +39,7 @@ const App = () => (
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/makeups" element={<MakeupsPage />} />
             <Route path="/cover" element={<CoverPage />} />
+            <Route path="/tutors" element={<TutorsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AdminLayout>

@@ -59,11 +59,8 @@ export default function TutorsPage() {
             <tr className="bg-muted/50 border-b border-border text-left">
               <th className="px-4 py-2.5 font-medium text-muted-foreground w-12">#</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Tutor Name</th>
-              <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">SG Trial</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Contact Number</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Email</th>
-              <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Enrolled Students</th>
-              <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Trial Students</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Paid Sessions</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Trial Sessions</th>
             </tr>
@@ -72,7 +69,7 @@ export default function TutorsPage() {
             {grouped.map(([country, countryTutors]) => (
               <> 
                 <tr key={`group-${country}`} className="bg-primary/5 border-t border-border">
-                  <td colSpan={9} className="px-4 py-2 font-semibold text-sm">
+                  <td colSpan={6} className="px-4 py-2 font-semibold text-sm">
                     {tutorCountryFlags[country] || ""} {country}
                   </td>
                 </tr>
@@ -80,13 +77,10 @@ export default function TutorsPage() {
                   <tr key={tutor.id} className="border-t border-border hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.id}</td>
                     <td className="px-4 py-2.5 font-medium">{tutor.name}</td>
-                    <td className="px-4 py-2.5 text-center">
-                      {tutor.isSingaporeTrial && <span className="text-success">✓</span>}
-                    </td>
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.contactNumber}</td>
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.email}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.enrolledStudents || "—"}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.trialStudents || "—"}</td>
+                    <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>
+                    <td className="px-4 py-2.5 text-center">{tutor.trialSessions || "—"}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.trialSessions || "—"}</td>
                   </tr>

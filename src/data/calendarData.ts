@@ -14,7 +14,9 @@ export interface CalendarRecord {
   country: string;
   studentCount: number;
   students: string;
+  studentList: string[];
   parentContacts: string;
+  parentContactList: string[];
   timestamp: number;
 }
 
@@ -206,7 +208,9 @@ function buildCalendarRecords() {
         country: formatJoined(countries, "Multiple Countries"),
         studentCount: slotSessions.length,
         students: formatJoined(students, "—"),
+        studentList: [...new Set(students)],
         parentContacts: formatJoined(parents, "—"),
+        parentContactList: [...new Set(parents)],
         timestamp: first.timestamp,
       };
     })

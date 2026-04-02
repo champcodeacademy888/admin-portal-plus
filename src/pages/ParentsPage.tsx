@@ -102,7 +102,6 @@ const allColumnKeys = [
   { key: "country", label: "Country" },
   { key: "channel", label: "Channel" },
   { key: "lastContacted", label: "Last Contacted" },
-  { key: "assignedTo", label: "Assigned To" },
   { key: "actions", label: "Actions" },
 ];
 
@@ -118,7 +117,7 @@ export default function ParentsPage() {
   const [countryFilter, setCountryFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "name", "children", "statuses", "psid", "country", "channel", "lastContacted", "assignedTo", "actions"
+    "name", "children", "statuses", "psid", "country", "channel", "lastContacted", "actions"
   ]));
   const pageSize = 20;
 
@@ -195,7 +194,6 @@ export default function ParentsPage() {
     { key: "country", header: "Country", render: (r: Parent) => <span className="whitespace-nowrap">{countryFlags[r.country] || "🌍"} {r.country}</span> },
     { key: "channel", header: "Channel", render: (r: Parent) => <ChannelIcon channel={r.channel} /> },
     { key: "lastContacted", header: "Last Contacted", render: (r: Parent) => <span>{r.lastContacted}</span> },
-    { key: "assignedTo", header: "Assigned To" },
     {
       key: "actions", header: "", render: (r: Parent) => (
         <TooltipProvider delayDuration={300}>

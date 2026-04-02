@@ -94,6 +94,15 @@ const columns = [
     ),
   },
   {
+    key: "lessonPauseDate", header: "Lesson Pause Date", render: (r: ChildWithParent) => (
+      <span className="text-sm">{
+        r.enrolmentStatus === "Paused" || r.enrolmentStatus === "Pending Pause"
+          ? r.lessonPauseDate || "—"
+          : "—"
+      }</span>
+    ),
+  },
+  {
     key: "lessonsCompleted", header: "Lessons Completed", render: (r: ChildWithParent) => (
       <span className="text-sm">{r.lessonsCompleted ?? "—"}</span>
     ),
@@ -158,7 +167,7 @@ export default function EnrolmentsPage() {
   }));
 
   const effectiveColumnKeys = compact
-    ? new Set(["student", "enrolmentStatus", "program", "tutor", "lessonStartDate", "lessonsCompleted", "country", "channel", "actions"])
+    ? new Set(["student", "enrolmentStatus", "program", "tutor", "lessonStartDate", "lessonPauseDate", "lessonsCompleted", "country", "channel", "actions"])
     : null;
 
   const filteredColumns = effectiveColumnKeys
@@ -243,6 +252,7 @@ export default function EnrolmentsPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Lesson Day</span><span>{selectedChild.lessonDay || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Tutor</span><span>{selectedChild.tutor || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Lesson Start Date</span><span>{selectedChild.lessonStartDate || "—"}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Lesson Pause Date</span><span>{selectedChild.enrolmentStatus === "Paused" || selectedChild.enrolmentStatus === "Pending Pause" ? selectedChild.lessonPauseDate || "—" : "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Package</span><span>{selectedChild.packageInterest || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Lessons Completed</span><span>{selectedChild.lessonsCompleted ?? "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Enrolled</span><span>{selectedChild.enrolledDate || "—"}</span></div>

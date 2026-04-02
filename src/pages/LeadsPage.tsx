@@ -401,15 +401,13 @@ export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [compact, setCompact] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "studentId", "student", "parent", "psid", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "assignedTo", "urgency", "actions"
+    "studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "assignedTo", "urgency", "actions"
   ]));
   const [columnsOpen, setColumnsOpen] = useState(false);
 
   const allColumnKeys = [
     { key: "studentId", label: "Student ID" },
     { key: "student", label: "Student" },
-    { key: "parent", label: "Parent" },
-    { key: "psid", label: "PSID" },
     { key: "status", label: "Status" },
     { key: "country", label: "Country" },
     { key: "channel", label: "Channel" },
@@ -1052,6 +1050,7 @@ export default function LeadsPage() {
                     <div><span className="text-muted-foreground text-xs block mb-1">Phone</span><span>{selectedChild.parent.phone}</span></div>
                     <div><span className="text-muted-foreground text-xs block mb-1">Country</span><span>{countryFlags[selectedChild.parent.country] || "🌍"} {selectedChild.parent.country}</span></div>
                     <div><span className="text-muted-foreground text-xs block mb-1">Channel</span><ChannelIcon channel={selectedChild.parent.channel} /></div>
+                    <div><span className="text-muted-foreground text-xs block mb-1">PSID</span><span>{selectedChild.parent.psid || "—"}</span></div>
                     <div><span className="text-muted-foreground text-xs block mb-1">Source</span><span>{selectedChild.parent.source}</span></div>
                     <div><span className="text-muted-foreground text-xs block mb-1">Assigned To</span><span>{selectedChild.parent.assignedTo}</span></div>
                   </div>

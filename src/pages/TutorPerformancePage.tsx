@@ -105,8 +105,16 @@ export default function TutorPerformancePage() {
     });
   }, [records, search, typeFilter]);
 
-  const complimentCount = records.filter(r => r.type === "Compliment").length;
-  const complaintCount = records.filter(r => r.type === "Complaint").length;
+  const groupedByTutor = useMemo(() => {
+    const map = new Map<string, PerformanceRecord[]>();
+    filtered.forEach(r => {
+      const arr = map.get(r.tutorName) || [];
+      arr.push(r);
+      map.set(r.tutorName, arr);
+    });
+    // Sort groups by tutor name
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [filtered]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

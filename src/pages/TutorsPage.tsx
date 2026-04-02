@@ -2,30 +2,15 @@ import { useState, useMemo } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Search } from "lucide-react";
 import { tutors, tutorCountryFlags } from "@/data/tutorsData";
-import { calendarRecords } from "@/data/calendarData";
-import { getAllChildren } from "@/data/parentsData";
 
 export default function TutorsPage() {
   const [search, setSearch] = useState("");
 
-  const allChildren = useMemo(() => getAllChildren(), []);
-
-  const tutorStats = useMemo(() => {
-    return tutors.map(tutor => {
-      const calendarSessions = calendarRecords.filter(r => r.tutor === tutor.name);
-      const paidSessions = calendarSessions.filter(r => r.lessonType === "Paid Class" || r.lessonType === "Mixed");
-      const trialSessions = calendarSessions.filter(r => r.lessonType === "Trial");
-      const enrolledStudents = allChildren.filter(c => c.tutor === tutor.name && c.enrolmentStatus === "Enrolled");
-      const trialStudents = allChildren.filter(c => c.trialTutor === tutor.name);
-      return { ...tutor, paidSessions: paidSessions.length, trialSessions: trialSessions.length, enrolledStudents: enrolledStudents.length, trialStudents: trialStudents.length };
-    });
-  }, [allChildren]);
-
   const filtered = useMemo(() => {
-    if (!search) return tutorStats;
+    if (!search) return tutors;
     const s = search.toLowerCase();
-    return tutorStats.filter(t => t.name.toLowerCase().includes(s) || t.country.toLowerCase().includes(s));
-  }, [search, tutorStats]);
+    return tutors.filter(t => t.name.toLowerCase().includes(s) || t.country.toLowerCase().includes(s));
+  }, [search]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();
@@ -57,7 +42,6 @@ export default function TutorsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 border-b border-border text-left">
-              <th className="px-4 py-2.5 font-medium text-muted-foreground w-12">#</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Tutor Name</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Contact Number</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Email</th>
@@ -67,18 +51,15 @@ export default function TutorsPage() {
             {grouped.map(([country, countryTutors]) => (
               <> 
                 <tr key={`group-${country}`} className="bg-primary/5 border-t border-border">
-                  <td colSpan={4} className="px-4 py-2 font-semibold text-sm">
+                  <td colSpan={3} className="px-4 py-2 font-semibold text-sm">
                     {tutorCountryFlags[country] || ""} {country}
                   </td>
                 </tr>
                 {countryTutors.map((tutor, idx) => (
                   <tr key={tutor.id} className="border-t border-border hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-2.5 text-muted-foreground">{tutor.id}</td>
                     <td className="px-4 py-2.5 font-medium">{tutor.name}</td>
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.contactNumber}</td>
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.email}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.trialSessions || "—"}</td>
                   </tr>
                 ))}
               </>

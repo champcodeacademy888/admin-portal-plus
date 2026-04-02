@@ -560,7 +560,7 @@ export default function LeadsPage() {
     }
 
     return result;
-  }, [activeTab, search, countryFilter, channelFilter]);
+  }, [activeTab, search, countryFilter, channelFilter, refreshKey]);
 
   const parseTrialDate = (value?: string) => {
     if (!value) return Number.NEGATIVE_INFINITY;

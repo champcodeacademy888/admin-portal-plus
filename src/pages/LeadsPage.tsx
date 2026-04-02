@@ -1368,7 +1368,7 @@ export default function LeadsPage() {
             {!createPkgSuccess && (
               <button
                 onClick={handleConfirmCreatePkg}
-                disabled={!selectedCatalogPkg || !lessonStartDate || !selectedTutor || !selectedProgram}
+                disabled={!selectedCatalogPkg || !lessonStartDate || !selectedTutor || !selectedProgram || !selectedSlot}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
               >
                 Create Package & Invoice

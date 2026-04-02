@@ -4,9 +4,9 @@ export type ChildStatus = "INQUIRY" | "LEAD" | "TRIAL ARRANGED" | "TRIAL DONE" |
 export type AIStatus = "active" | "admin" | "completed";
 
 export const programs = [
-  "Scratch","Basic Computer Minecraft","Basic Computer Roblox","Minecraft","Minecraft Level 2",
+  "Scratch","Basic Computer Minecraft","Basic Computer Roblox","Minecraft",
   "Minecraft Project 1","Minecraft Project 2","Minecraft Project 3","Minecraft Project 4","Minecraft Project 5",
-  "Roblox","Roblox AI Debugging","Roblox Level 2","Roblox Project 1","Roblox Project 2",
+  "Roblox","Roblox AI Debugging","Roblox Project 1","Roblox Project 2",
   "Roblox Project 3","Roblox Project 4","Roblox Project 5","Website Design","Python","Crypto",
 ];
 
@@ -101,7 +101,6 @@ const maxLessonsByProgram: Record<string, number> = {
   "Basic Computer Minecraft": 3,
   "Basic Computer Roblox": 3,
   "Minecraft": 23,
-  "Minecraft Level 2": 23,
   "Minecraft Project 1": 10,
   "Minecraft Project 2": 10,
   "Minecraft Project 3": 10,
@@ -109,7 +108,6 @@ const maxLessonsByProgram: Record<string, number> = {
   "Minecraft Project 5": 10,
   "Roblox": 23,
   "Roblox AI Debugging": 6,
-  "Roblox Level 2": 23,
   "Roblox Project 1": 10,
   "Roblox Project 2": 10,
   "Roblox Project 3": 10,

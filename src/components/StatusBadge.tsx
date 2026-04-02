@@ -26,6 +26,12 @@ const badgeVariants = cva(
         return: "bg-info/15 text-info",
         makeup: "bg-warning/15 text-warning",
         regular: "bg-muted text-muted-foreground",
+        transferred: "bg-info/15 text-info",
+        incomplete: "bg-warning/15 text-warning",
+        paused: "bg-warning/15 text-warning",
+        pending_pause: "bg-warning/15 text-warning",
+        pending_complete: "bg-info/15 text-info",
+        to_confirm: "bg-muted text-muted-foreground",
       },
     },
     defaultVariants: {

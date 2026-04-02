@@ -18,6 +18,8 @@ export interface Child {
   age: number;
   level: string;
   status: ChildStatus;
+  programStatus?: "Transferred" | "Complete" | "Incomplete";
+  enrolmentStatus?: "Enrolled" | "Paused" | "Pending Pause" | "Pending Complete" | "Complete" | "To Confirm";
   trialDate?: string;
   trialTutor?: string;
   trialPassed?: boolean;
@@ -89,6 +91,8 @@ const admins = ["Sarah A.","James L.","Maria G.","David K."];
 const tutors = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
 const levels = ["—","Beginner","Intermediate","Advanced"];
 const packageInterests = ["8 lessons / month","4 lessons / month","Trial only","16 lessons / month","10 lessons / month"];
+const programStatuses: Array<Child["programStatus"]> = ["Transferred", "Complete", "Incomplete"];
+const enrolmentStatuses: Array<NonNullable<Child["enrolmentStatus"]>> = ["Enrolled", "Paused", "Pending Pause", "Pending Complete", "Complete", "To Confirm"];
 const lostReasons = ["Price","Timing","Chose competitor","Not interested","No response"];
 const noteTexts = [
   "Parent interested in weekend classes","Trial went well, follow up for enrollment",
@@ -187,6 +191,8 @@ function generateParents(): Parent[] {
         child.handedOff = rand() > 0.5;
         child.program = pick(programs);
         child.lessonDay = pick(lessonDays);
+        child.programStatus = pick(programStatuses) ?? "Incomplete";
+        child.enrolmentStatus = pick(enrolmentStatuses);
       }
 
       if (childStatus === "LOST") {

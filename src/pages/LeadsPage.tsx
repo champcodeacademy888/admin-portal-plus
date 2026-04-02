@@ -479,10 +479,7 @@ export default function LeadsPage() {
     return getTutorAvailableSlots(trialTutor);
   }, [trialTutor]);
 
-  const tutorOptions = useMemo(() => {
-    // Dynamic import from tutorsData
-    return ["James Yeo","James Yeo2","Lester Tan","Melinda Chua","Sarah Darois","Abigael Pastrana","Adriane Manzano","Christie Cadio","Eleanor Dapas","Lizzane Majes","Nelson Philip Alo St. Nic.","Abigail Chong","Ching Lun Yeong","Dickson Hau","Karina Chai","Ayesha Zeeshan","Deeksha Banjal","Divina Violet","Kamal Jaglani","Rahul Shastri","Sandhya Kumar","Salso Saseen","Abdullah Qazi","Aisha Rizvi","Iqra Zafar","Mohammad Naheel","Anetta Widapa","Keke Putri Gangi","Gadis Nur Fauziah","Shanti Widayanti"];
-  }, []);
+  const tutorOptions = tutorNames;
   const programOptions = ["Scratch","Python","Web Development","Roblox","Minecraft","JavaScript","Data Science","AI & Machine Learning"];
 
   const availableSlots = useMemo(() => {

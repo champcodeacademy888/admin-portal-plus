@@ -287,3 +287,36 @@ function ensureThreeHundredRecords(records: CalendarRecord[]) {
 }
 
 export const calendarRecords = ensureThreeHundredRecords(buildCalendarRecords());
+
+export function getTutorAvailableSlots(tutor: string): { date: string; time: string; label: string }[] {
+  const tutorRecords = calendarRecords.filter(r => r.tutor === tutor);
+  const dateSet = new Set<string>();
+  tutorRecords.forEach(r => {
+    dateSet.add(r.date);
+  });
+  // For each date the tutor has classes, offer time slots around their schedule
+  const slots: { date: string; time: string; label: string }[] = [];
+  const allTimes = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
+  dateSet.forEach(dateStr => {
+    const busyTimes = new Set(tutorRecords.filter(r => r.date === dateStr).map(r => r.time));
+    allTimes.forEach(t => {
+      if (!busyTimes.has(t)) {
+        slots.push({ date: dateStr, time: t, label: `${dateStr} at ${t}` });
+      }
+    });
+  });
+  // Also add some future dates where tutor has no classes yet
+  const today = new Date();
+  for (let i = 1; i <= 30; i++) {
+    const d = addDays(today, i);
+    const ds = format(d, "yyyy-MM-dd");
+    if (!dateSet.has(ds)) {
+      ["10:00","14:00","16:00"].forEach(t => {
+        slots.push({ date: ds, time: t, label: `${format(d, "d MMM yyyy")} at ${t}` });
+      });
+    }
+  }
+  // Sort by date then time
+  slots.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  return slots;
+}

@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { packages as packageCatalog } from "@/data/packagesCatalog";
 
 export type ChildStatus = "INQUIRY" | "LEAD" | "TRIAL ARRANGED" | "TRIAL DONE" | "MISSED TRIAL" | "PENDING PAYMENT" | "PAYMENT FAILED" | "ENROLLED" | "CLOSED WON" | "LOST";
 export type AIStatus = "active" | "admin" | "completed";
@@ -26,6 +27,8 @@ export interface Child {
   trialOutcomeMarked?: boolean;
   hoursSinceTrial?: number;
   packageInterest?: string;
+  studentPackageId?: string;
+  studentPackageName?: string;
   lostReason?: string;
   enrolledDate?: string;
   program?: string;
@@ -232,6 +235,25 @@ function getTrialSlot(status: "TRIAL ARRANGED" | "TRIAL DONE"): TrialSlot {
   return createTrialSlotPool(status, 1)[0];
 }
 
+function normalizePackageCountry(country: string) {
+  if (country === "UAE") return "Dubai";
+  return country;
+}
+
+function getMatchingPackages(country: string) {
+  const normalizedCountry = normalizePackageCountry(country);
+  return packageCatalog.filter((pkg) => pkg.active && pkg.country === normalizedCountry);
+}
+
+function attachStudentPackage(child: Child, country: string) {
+  const matchingPackages = getMatchingPackages(country);
+  if (matchingPackages.length === 0) return;
+
+  const selectedPackage = pick(matchingPackages);
+  child.studentPackageId = `SP-${selectedPackage.id}`;
+  child.studentPackageName = selectedPackage.name;
+}
+
 function generateParents(): Parent[] {
   const result: Parent[] = [];
   let childIdCounter = 10000;
@@ -283,6 +305,10 @@ function generateParents(): Parent[] {
         child.trialTutor = trialSlot.trialTutor;
         child.hoursSinceTrial = trialSlot.hoursSinceTrial;
         child.packageInterest = pick(packageInterests);
+
+        if (childStatus === "PENDING PAYMENT" || childStatus === "PAYMENT FAILED") {
+          attachStudentPackage(child, country);
+        }
       }
 
       if (childStatus === "ENROLLED" || childStatus === "CLOSED WON") {
@@ -305,6 +331,10 @@ function generateParents(): Parent[] {
         child.lessonPauseDate = getLessonPauseDate(enrolmentStatus);
         child.lessonsCompleted = getLessonsCompleted(program, enrolmentStatus);
         child.programStatus = enrolmentStatus === "Complete" ? "Complete" : (pick(programStatuses) ?? "Incomplete");
+
+        if (childStatus === "CLOSED WON") {
+          attachStudentPackage(child, country);
+        }
       }
 
       if (childStatus === "LOST") {

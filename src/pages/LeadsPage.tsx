@@ -509,12 +509,18 @@ export default function LeadsPage() {
 
     const { pkg } = createStudentPackageFromLead(createPkgTarget, catalogPkg, lessonStartDate);
 
-    // If past start date → lead becomes PAYMENT FAILED
     const isPast = lessonStartDate < new Date();
+    // Update lead status
+    createPkgTarget.status = (isPast ? "PAYMENT FAILED" : "PENDING PAYMENT") as ChildStatus;
+    createPkgTarget.program = selectedProgram;
+    createPkgTarget.tutor = selectedTutor;
+    createPkgTarget.lessonStartDate = format(lessonStartDate, "d MMM yyyy");
+    setRefreshKey(k => k + 1);
+
     if (isPast) {
       setCreatePkgSuccess(`Created ${pkg.id} with status Payment Due (start date passed → Payment Failed).`);
     } else {
-      setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated.`);
+      setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated. Lead status → Pending Payment.`);
     }
   };
 

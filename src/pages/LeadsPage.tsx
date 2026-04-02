@@ -516,6 +516,22 @@ export default function LeadsPage() {
       setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated.`);
     }
   };
+
+  const handleOpenArrangeTrial = (child: ChildWithParent) => {
+    setArrangeTrialTarget(child);
+    setTrialTutor("");
+    setTrialProgram("");
+    setTrialSlot("");
+    setTrialDate(undefined);
+    setArrangeTrialSuccess(null);
+    setArrangeTrialOpen(true);
+  };
+
+  const handleConfirmArrangeTrial = () => {
+    if (!arrangeTrialTarget || !trialTutor || !trialProgram || !trialDate) return;
+    const formattedDate = format(trialDate, "EEE d MMM, HH:mm");
+    setArrangeTrialSuccess(`Trial arranged for ${arrangeTrialTarget.name} — ${trialProgram} with ${trialTutor} on ${formattedDate}`);
+  };
   const filteredLeads = useMemo(() => {
     let result = allLeadChildren.filter((child) => {
       const tab = tabs[activeTab].label;

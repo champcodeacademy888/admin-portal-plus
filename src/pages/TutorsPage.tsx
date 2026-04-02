@@ -77,13 +77,10 @@ export default function TutorsPage() {
                   <tr key={tutor.id} className="border-t border-border hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.id}</td>
                     <td className="px-4 py-2.5 font-medium">{tutor.name}</td>
-                    <td className="px-4 py-2.5 text-center">
-                      {tutor.isSingaporeTrial && <span className="text-success">✓</span>}
-                    </td>
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.contactNumber}</td>
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.email}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.enrolledStudents || "—"}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.trialStudents || "—"}</td>
+                    <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>
+                    <td className="px-4 py-2.5 text-center">{tutor.trialSessions || "—"}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.trialSessions || "—"}</td>
                   </tr>

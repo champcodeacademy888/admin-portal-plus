@@ -84,6 +84,26 @@ export default function InvoicingPage() {
       render: (invoice: InvoiceRecord) => <span>{invoice.termNumber}</span>,
     },
     {
+      key: "termStartDate",
+      header: "Term Start Date",
+      render: (invoice: InvoiceRecord) => <span>{invoice.termStartDate}</span>,
+    },
+    {
+      key: "termEndDate",
+      header: "Term End Date",
+      render: (invoice: InvoiceRecord) => <span>{invoice.termEndDate}</span>,
+    },
+    {
+      key: "nextInvoiceCreationDate",
+      header: "Next Invoice Creation Date",
+      render: (invoice: InvoiceRecord) => <span>{invoice.nextInvoiceCreationDate || "—"}</span>,
+    },
+    {
+      key: "paymentCollectionDate",
+      header: "Payment Collection Date",
+      render: (invoice: InvoiceRecord) => <span>{invoice.paymentCollectionDate || "—"}</span>,
+    },
+    {
       key: "dueDate",
       header: "Due Date",
       render: (invoice: InvoiceRecord) => <span>{invoice.dueDate}</span>,
@@ -193,6 +213,10 @@ export default function InvoicingPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Lead Record</span><span className="font-mono">{selectedInvoice.leadRecordId}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Program</span><span>{selectedInvoice.program}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Package</span><span>{selectedInvoice.packageName}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Term Start Date</span><span>{selectedInvoice.termStartDate}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Term End Date</span><span>{selectedInvoice.termEndDate}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Next Invoice Creation Date</span><span>{selectedInvoice.nextInvoiceCreationDate || "—"}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Payment Collection Date</span><span>{selectedInvoice.paymentCollectionDate || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Issued Date</span><span>{selectedInvoice.issuedDate}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Due Date</span><span>{selectedInvoice.dueDate}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Paid Date</span><span>{selectedInvoice.paidDate || "—"}</span></div>

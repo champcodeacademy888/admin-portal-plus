@@ -16,6 +16,10 @@ export interface InvoiceRecord {
   program: string;
   packageName: string;
   termNumber: number;
+  termStartDate: string;
+  termEndDate: string;
+  nextInvoiceCreationDate?: string;
+  paymentCollectionDate?: string;
   dueDate: string;
   issuedDate: string;
   paidDate?: string;
@@ -44,6 +48,8 @@ export interface StudentPackageRecord {
   status: StudentPackageStatus;
   packageStartDate: string;
   packageEndDate: string;
+  nextInvoiceCreationDate?: string;
+  paymentCollectionDate?: string;
   leadStatus: ChildWithParent["status"];
   invoices: InvoiceRecord[];
 }
@@ -147,9 +153,13 @@ function buildStudentPackages() {
     const packageName = `${child.program || "General Coding"} ${termCount}-Term Package`;
 
     const invoices: InvoiceRecord[] = invoiceStatuses.map((status, invoiceIndex) => {
-      const dueDate = addDays(packageStartDate, invoiceIndex * 28);
+      const termStartDate = addDays(packageStartDate, invoiceIndex * 28);
+      const termEndDate = addDays(termStartDate, 27);
+      const dueDate = termStartDate;
       const issuedDate = addDays(dueDate, -7);
       const paidDate = status === "Paid" ? addDays(dueDate, -pick([1, 2, 3, 5])) : undefined;
+      const nextInvoiceCreationDate = invoiceIndex < termCount - 1 ? addDays(termEndDate, -7) : undefined;
+      const paymentCollectionDate = status === "Paid" ? paidDate : status === "Overdue" ? addDays(dueDate, 3) : dueDate;
 
       return {
         id: `INV-${8200 + index}-${invoiceIndex + 1}`,
@@ -163,6 +173,10 @@ function buildStudentPackages() {
         program: child.program || "General Coding",
         packageName,
         termNumber: invoiceIndex + 1,
+        termStartDate: format(termStartDate, "d MMM yyyy"),
+        termEndDate: format(termEndDate, "d MMM yyyy"),
+        nextInvoiceCreationDate: nextInvoiceCreationDate ? format(nextInvoiceCreationDate, "d MMM yyyy") : undefined,
+        paymentCollectionDate: format(paymentCollectionDate, "d MMM yyyy"),
         dueDate: format(dueDate, "d MMM yyyy"),
         issuedDate: format(issuedDate, "d MMM yyyy"),
         paidDate: paidDate ? format(paidDate, "d MMM yyyy") : undefined,
@@ -178,6 +192,8 @@ function buildStudentPackages() {
     const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
     const status = getPackageStatus(invoices);
     const packageEndDate = addDays(packageStartDate, Math.max(termCount - 1, 0) * 28);
+    const nextInvoiceCreationDate = invoices.find((invoice) => invoice.status !== "Paid")?.nextInvoiceCreationDate;
+    const paymentCollectionDate = invoices.find((invoice) => invoice.status !== "Paid")?.paymentCollectionDate ?? invoices[invoices.length - 1]?.paymentCollectionDate;
 
     return {
       id: packageId,
@@ -199,6 +215,8 @@ function buildStudentPackages() {
       status,
       packageStartDate: format(packageStartDate, "d MMM yyyy"),
       packageEndDate: format(packageEndDate, "d MMM yyyy"),
+      nextInvoiceCreationDate,
+      paymentCollectionDate,
       leadStatus: child.status,
       invoices,
     };

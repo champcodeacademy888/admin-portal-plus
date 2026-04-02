@@ -85,6 +85,26 @@ export default function StudentPackagesPage() {
       render: (record: StudentPackageRecord) => <span>{record.termCount}</span>,
     },
     {
+      key: "termStartDate",
+      header: "Term Start Date",
+      render: (record: StudentPackageRecord) => <span>{record.packageStartDate}</span>,
+    },
+    {
+      key: "termEndDate",
+      header: "Term End Date",
+      render: (record: StudentPackageRecord) => <span>{record.packageEndDate}</span>,
+    },
+    {
+      key: "nextInvoiceCreationDate",
+      header: "Next Invoice Creation Date",
+      render: (record: StudentPackageRecord) => <span>{record.nextInvoiceCreationDate || "—"}</span>,
+    },
+    {
+      key: "paymentCollectionDate",
+      header: "Payment Collection Date",
+      render: (record: StudentPackageRecord) => <span>{record.paymentCollectionDate || "—"}</span>,
+    },
+    {
       key: "invoiceProgress",
       header: "Invoices Paid",
       render: (record: StudentPackageRecord) => <span>{record.paidInvoices} / {record.totalInvoices}</span>,
@@ -190,6 +210,8 @@ export default function StudentPackagesPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Balance</span><span>{formatMoney(selectedPackage.balanceAmount, selectedPackage.currency)}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Package Start</span><span>{selectedPackage.packageStartDate}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Package End</span><span>{selectedPackage.packageEndDate}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Next Invoice Creation Date</span><span>{selectedPackage.nextInvoiceCreationDate || "—"}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Payment Collection Date</span><span>{selectedPackage.paymentCollectionDate || "—"}</span></div>
                 </div>
 
                 <div className="border-t border-border pt-4 space-y-3">
@@ -199,7 +221,7 @@ export default function StudentPackagesPage() {
                       <div className="flex items-center justify-between gap-3 mb-2">
                         <div>
                           <p className="font-medium text-sm">{invoice.id}</p>
-                          <p className="text-xs text-muted-foreground">Term {invoice.termNumber} · Due {invoice.dueDate}</p>
+                          <p className="text-xs text-muted-foreground">Term {invoice.termNumber} · {invoice.termStartDate} to {invoice.termEndDate}</p>
                         </div>
                         <StatusBadge variant={invoice.status === "Paid" ? "completed" : invoice.status === "Overdue" ? "pending" : "scheduled"}>
                           {invoice.status}
@@ -207,8 +229,8 @@ export default function StudentPackagesPage() {
                       </div>
                       <div className="grid grid-cols-3 gap-3 text-sm">
                         <div><span className="text-muted-foreground text-xs block mb-1">Amount</span><span>{formatMoney(invoice.amount, invoice.currency)}</span></div>
-                        <div><span className="text-muted-foreground text-xs block mb-1">Issued</span><span>{invoice.issuedDate}</span></div>
-                        <div><span className="text-muted-foreground text-xs block mb-1">Paid Date</span><span>{invoice.paidDate || "—"}</span></div>
+                        <div><span className="text-muted-foreground text-xs block mb-1">Next Invoice Creation</span><span>{invoice.nextInvoiceCreationDate || "—"}</span></div>
+                        <div><span className="text-muted-foreground text-xs block mb-1">Payment Collection</span><span>{invoice.paymentCollectionDate || "—"}</span></div>
                       </div>
                     </div>
                   ))}

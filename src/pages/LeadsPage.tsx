@@ -1141,6 +1141,12 @@ export default function LeadsPage() {
               </div>
 
               <div className="border-t border-border px-6 py-4 space-y-2">
+                <button
+                  onClick={() => handleOpenCreatePkg(selectedChild)}
+                  className="w-full px-4 py-2.5 bg-accent text-accent-foreground rounded-lg text-sm font-medium hover:bg-accent/80 flex items-center justify-center gap-1.5 mb-1"
+                >
+                  <Package size={14} /> Create Student Package
+                </button>
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Mark Trial Booked</button>
                   <button onClick={() => handleMarkAsLost(selectedChild)} className="flex-1 px-4 py-2.5 border border-destructive text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10">Mark as Lost</button>

@@ -3,6 +3,8 @@ export interface Tutor {
   name: string;
   country: string;
   isSingaporeTrial: boolean;
+  contactNumber: string;
+  email: string;
 }
 
 export const tutors: Tutor[] = [

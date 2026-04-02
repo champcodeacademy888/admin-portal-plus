@@ -31,12 +31,26 @@ const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL
 
 const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.status));
 
-const needsAttention = (c: ChildWithParent) =>
-  (c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 20) ||
-  (c.status === "TRIAL DONE" && (c.hoursSinceTrial ?? c.parent.lastContactedHrs) >= 24) ||
-  (c.status === "MISSED TRIAL") ||
-  (c.status === "TRIAL ARRANGED" && c.trialPassed && !c.trialOutcomeMarked) ||
-  (c.parent.reengagementDate && new Date(c.parent.reengagementDate) <= today);
+const attentionStatuses = new Set<ChildStatus>(["INQUIRY", "LEAD", "TRIAL ARRANGED", "MISSED TRIAL", "PENDING PAYMENT", "PAYMENT FAILED"]);
+
+const needsAttention = (c: ChildWithParent) => {
+  if (!attentionStatuses.has(c.status)) return false;
+  // Inquiry: not contacted or stale (>48hrs)
+  if (c.status === "INQUIRY" && c.parent.lastContactedHrs >= 48) return true;
+  // Lead: going stale (>72hrs no contact)
+  if (c.status === "LEAD" && c.parent.lastContactedHrs >= 72) return true;
+  // Trial Arranged: upcoming trial needs prep, or trial passed but outcome not marked
+  if (c.status === "TRIAL ARRANGED" && (c.trialPassed && !c.trialOutcomeMarked)) return true;
+  // Missed Trial: always needs rebooking
+  if (c.status === "MISSED TRIAL") return true;
+  // Pending Payment / Payment Failed: always need follow-up
+  if (c.status === "PENDING PAYMENT" || c.status === "PAYMENT FAILED") return true;
+  // Messenger 24hr window expiring
+  if (c.parent.channel === "Messenger" && c.parent.lastContactedHrs >= 20 && ["INQUIRY", "LEAD"].includes(c.status)) return true;
+  // Re-engagement date reached
+  if (c.parent.reengagementDate && new Date(c.parent.reengagementDate) <= today && attentionStatuses.has(c.status)) return true;
+  return false;
+};
 
 const needsAttentionCount = allLeadChildren.filter(needsAttention).length;
 

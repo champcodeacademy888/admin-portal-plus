@@ -406,7 +406,7 @@ export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [compact, setCompact] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
-    "studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "assignedTo", "urgency", "actions"
+    "studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "urgency", "actions"
   ]));
   const [columnsOpen, setColumnsOpen] = useState(false);
 
@@ -419,7 +419,6 @@ export default function LeadsPage() {
     { key: "lastContacted", label: "Last Contacted" },
     { key: "urgency", label: "Urgency" },
     { key: "aiAgent", label: "AI Agent" },
-    { key: "assignedTo", label: "Assigned To" },
     { key: "trialDate", label: "Date of Trial" },
     { key: "trialTutor", label: "Trial Tutor" },
     { key: "packageInterest", label: "Package Interest" },
@@ -650,7 +649,6 @@ export default function LeadsPage() {
       },
     },
     { key: "aiAgent", header: "AI Agent", render: (r: ChildWithParent) => <AIStatusBadge status={r.parent.aiAgent} /> },
-    { key: "assignedTo", header: "Assigned To", render: (r: ChildWithParent) => <span>{r.parent.assignedTo}</span> },
     {
       key: "trialDate", header: "Date of Trial", render: (r: ChildWithParent) => {
         if (!r.trialDate) return <span className="text-muted-foreground">—</span>;

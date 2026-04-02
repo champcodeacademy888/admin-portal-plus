@@ -10,7 +10,7 @@ export default function TutorsPage() {
     if (!search) return tutors;
     const s = search.toLowerCase();
     return tutors.filter(t => t.name.toLowerCase().includes(s) || t.country.toLowerCase().includes(s));
-  }, [search, tutorStats]);
+  }, [search]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();

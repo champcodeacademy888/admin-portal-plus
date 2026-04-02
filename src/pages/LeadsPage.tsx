@@ -461,6 +461,22 @@ export default function LeadsPage() {
   const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [createPkgSuccess, setCreatePkgSuccess] = useState<string | null>(null);
 
+  // Arrange Trial dialog state
+  const [arrangeTrialOpen, setArrangeTrialOpen] = useState(false);
+  const [arrangeTrialTarget, setArrangeTrialTarget] = useState<ChildWithParent | null>(null);
+  const [trialTutor, setTrialTutor] = useState<string>("");
+  const [trialProgram, setTrialProgram] = useState<string>("");
+  const [trialSlot, setTrialSlot] = useState<string>("");
+  const [trialDate, setTrialDate] = useState<Date | undefined>();
+  const [arrangeTrialSuccess, setArrangeTrialSuccess] = useState<string | null>(null);
+
+  const trialProgramOptions = ["Minecraft Trial","Roblox Trial","Scratch Trial","Web Design Trial","Python Trial","AI Trial"];
+
+  const trialAvailableSlots = useMemo(() => {
+    if (!trialTutor) return [];
+    return getTutorAvailableSlots(trialTutor);
+  }, [trialTutor]);
+
   const tutorOptions = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
   const programOptions = ["Scratch","Python","Web Development","Roblox","Minecraft","JavaScript","Data Science","AI & Machine Learning"];
 

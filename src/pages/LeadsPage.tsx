@@ -527,7 +527,7 @@ export default function LeadsPage() {
 
   // Determine visible columns based on compact mode
   const effectiveVisibleColumns = compact
-    ? new Set(["studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "urgency", "actions"])
+    ? new Set(["studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "urgency", "actions"])
     : visibleColumns;
 
   const columns = [

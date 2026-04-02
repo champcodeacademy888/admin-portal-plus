@@ -19,6 +19,7 @@ import { parents, countryFlags, todayFormatted, type Parent, type ChildWithParen
 
 const today = new Date();
 const todayStr = todayFormatted;
+const TRIAL_GROUP_TABS = new Set(["Trial Arranged", "Trial Done"]);
 
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
@@ -464,10 +465,54 @@ export default function LeadsPage() {
     return result;
   }, [activeTab, search, countryFilter, channelFilter]);
 
+  const parseTrialDate = (value?: string) => {
+    if (!value) return Number.NEGATIVE_INFINITY;
+    const parsed = new Date(`${value} 2026`).getTime();
+    return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
+  };
+
+  const shouldGroupByTrialSlot = TRIAL_GROUP_TABS.has(tabs[activeTab].label);
+
+  const groupedTrialLeads = useMemo(() => {
+    if (!shouldGroupByTrialSlot) return [] as { label: string; key: string; rows: ChildWithParent[]; latest: number }[];
+
+    const groups = new Map<string, ChildWithParent[]>();
+    filteredLeads.forEach((lead) => {
+      const key = lead.trialDate ?? "No Date";
+      const existing = groups.get(key) ?? [];
+      existing.push(lead);
+      groups.set(key, existing);
+    });
+
+    return Array.from(groups.entries())
+      .map(([key, rows]) => ({
+        key,
+        label: key,
+        rows: rows.sort((a, b) => a.name.localeCompare(b.name)),
+        latest: Math.max(...rows.map((row) => parseTrialDate(row.trialDate))),
+      }))
+      .sort((a, b) => b.latest - a.latest || b.label.localeCompare(a.label));
+  }, [filteredLeads, shouldGroupByTrialSlot]);
+
   const viewAll = currentPage === 0;
   const compactPageSize = compact ? 25 : pageSize;
   const totalPages = Math.max(1, Math.ceil(filteredLeads.length / compactPageSize));
   const paginatedLeads = viewAll ? filteredLeads : filteredLeads.slice((currentPage - 1) * compactPageSize, currentPage * compactPageSize);
+
+  const paginatedTrialGroups = useMemo(() => {
+    if (!shouldGroupByTrialSlot) return [] as { label: string; key: string; rows: ChildWithParent[]; latest: number; startIndex: number }[];
+
+    const groups = viewAll
+      ? groupedTrialLeads
+      : groupedTrialLeads.slice((currentPage - 1) * compactPageSize, currentPage * compactPageSize);
+
+    let runningIndex = viewAll ? 0 : (currentPage - 1) * compactPageSize;
+    return groups.map((group) => {
+      const groupWithIndex = { ...group, startIndex: runningIndex };
+      runningIndex += group.rows.length;
+      return groupWithIndex;
+    });
+  }, [currentPage, compactPageSize, groupedTrialLeads, shouldGroupByTrialSlot, viewAll]);
 
   const handlePageChange = (page: number) => {
     if (page === 0) setCurrentPage(0);
@@ -733,7 +778,7 @@ export default function LeadsPage() {
   };
 
   // Smart bulk suggestion
-  const selectedLeads = Array.from(selectedIndices).map(i => paginatedLeads[i]).filter(Boolean);
+  const selectedLeads = Array.from(selectedIndices).map(i => filteredLeads[i]).filter(Boolean);
   const bulkSuggestion = getBulkSuggestion(selectedLeads);
 
   return (
@@ -846,27 +891,91 @@ export default function LeadsPage() {
 
       {viewMode === "table" ? (
         <div className={compact ? "[&_td]:py-1.5 [&_th]:py-2" : ""}>
-          <DataTable
-            columns={filteredColumns as any}
-            data={paginatedLeads as any}
-            totalItems={filteredLeads.length}
-            currentPage={viewAll ? 1 : currentPage}
-            totalPages={viewAll ? 1 : totalPages}
-            onPageChange={handlePageChange}
-            viewingAll={viewAll}
-            onRowClick={(row) => openPanel(row as unknown as ChildWithParent)}
-            rowClassName={(row) => {
-              const r = row as unknown as ChildWithParent;
-              return cn(
-                "group/row",
-                isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : ""
-              );
-            }}
-            emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
-            selectable
-            selectedIndices={selectedIndices}
-            onSelectionChange={setSelectedIndices}
-          />
+          {shouldGroupByTrialSlot ? (
+            <div className="space-y-5">
+              {paginatedTrialGroups.map((group) => (
+                <section key={group.key} className="space-y-2">
+                  <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-2">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{group.label}</p>
+                      <p className="text-xs text-muted-foreground">{group.rows.length} record{group.rows.length > 1 ? "s" : ""}</p>
+                    </div>
+                  </div>
+                  <DataTable
+                    columns={filteredColumns as any}
+                    data={group.rows as any}
+                    totalItems={filteredLeads.length}
+                    currentPage={viewAll ? 1 : currentPage}
+                    totalPages={viewAll ? 1 : totalPages}
+                    indexOffset={group.startIndex}
+                    onRowClick={(row) => openPanel(row as unknown as ChildWithParent)}
+                    rowClassName={(row) => {
+                      const r = row as unknown as ChildWithParent;
+                      return cn(
+                        "group/row",
+                        isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : ""
+                      );
+                    }}
+                    emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
+                    hideFooter
+                    selectable
+                    selectedIndices={selectedIndices}
+                    onSelectionChange={setSelectedIndices}
+                  />
+                </section>
+              ))}
+
+              {paginatedTrialGroups.length === 0 && (
+                <DataTable
+                  columns={filteredColumns as any}
+                  data={[] as any}
+                  totalItems={filteredLeads.length}
+                  currentPage={viewAll ? 1 : currentPage}
+                  totalPages={viewAll ? 1 : totalPages}
+                  emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
+                  hideFooter
+                  selectable
+                  selectedIndices={selectedIndices}
+                  onSelectionChange={setSelectedIndices}
+                />
+              )}
+
+              {filteredLeads.length > 0 && (
+                <div className="flex items-center justify-center gap-4 rounded-lg border border-border bg-card py-3 text-sm text-muted-foreground">
+                  {!viewAll && <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => handlePageChange(currentPage - 1)}>Previous</button>}
+                  <span>{viewAll ? `Showing all ${filteredLeads.length} results` : `Page ${currentPage} of ${totalPages} · ${filteredLeads.length} total`}</span>
+                  {!viewAll && <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => handlePageChange(currentPage + 1)}>Next</button>}
+                  {filteredLeads.length > 20 && (
+                    <button className="ml-2 text-xs hover:text-foreground underline underline-offset-2" onClick={() => handlePageChange(viewAll ? 1 : 0)}>
+                      {viewAll ? "Paginate" : "View All"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <DataTable
+              columns={filteredColumns as any}
+              data={paginatedLeads as any}
+              totalItems={filteredLeads.length}
+              currentPage={viewAll ? 1 : currentPage}
+              totalPages={viewAll ? 1 : totalPages}
+              onPageChange={handlePageChange}
+              viewingAll={viewAll}
+              onRowClick={(row) => openPanel(row as unknown as ChildWithParent)}
+              rowClassName={(row) => {
+                const r = row as unknown as ChildWithParent;
+                return cn(
+                  "group/row",
+                  isMessengerWarning(r) ? "border-l-[3px] border-l-warning/70" : ""
+                );
+              }}
+              emptyMessage={tabEmptyMessages[tabs[activeTab].label] || "No leads at this stage"}
+              selectable
+              selectedIndices={selectedIndices}
+              onSelectionChange={setSelectedIndices}
+            />
+          )}
         </div>
       ) : (
         <KanbanView leads={filteredLeads} onLeadClick={openPanel} />

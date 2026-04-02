@@ -13,11 +13,13 @@ interface DataTableProps<T> {
   totalItems?: number;
   currentPage?: number;
   totalPages?: number;
+  indexOffset?: number;
   onRowClick?: (row: T, index: number) => void;
   onPageChange?: (page: number) => void;
   rowClassName?: (row: T) => string;
   emptyMessage?: string;
   viewingAll?: boolean;
+  hideFooter?: boolean;
   selectable?: boolean;
   selectedIndices?: Set<number>;
   onSelectionChange?: (indices: Set<number>) => void;
@@ -29,31 +31,37 @@ export default function DataTable<T extends Record<string, unknown>>({
   totalItems,
   currentPage = 1,
   totalPages = 1,
+  indexOffset = 0,
   onRowClick,
   onPageChange,
   rowClassName,
   emptyMessage = "No data found",
   viewingAll = false,
+  hideFooter = false,
   selectable = false,
   selectedIndices,
   onSelectionChange,
 }: DataTableProps<T>) {
-  const allSelected = data.length > 0 && selectedIndices?.size === data.length;
+  const rowIndices = data.map((_, i) => i + indexOffset);
+  const allSelected = rowIndices.length > 0 && rowIndices.every((index) => selectedIndices?.has(index));
 
   const toggleAll = () => {
     if (!onSelectionChange) return;
+    const next = new Set(selectedIndices ?? []);
     if (allSelected) {
-      onSelectionChange(new Set());
+      rowIndices.forEach((index) => next.delete(index));
     } else {
-      onSelectionChange(new Set(data.map((_, i) => i)));
+      rowIndices.forEach((index) => next.add(index));
     }
+    onSelectionChange(next);
   };
 
   const toggleRow = (index: number) => {
     if (!onSelectionChange || !selectedIndices) return;
+    const absoluteIndex = index + indexOffset;
     const next = new Set(selectedIndices);
-    if (next.has(index)) next.delete(index);
-    else next.add(index);
+    if (next.has(absoluteIndex)) next.delete(absoluteIndex);
+    else next.add(absoluteIndex);
     onSelectionChange(next);
   };
 
@@ -97,7 +105,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                 >
                   {selectable && (
                     <td className="px-3 py-3.5 w-10" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox checked={selectedIndices?.has(i) || false} onCheckedChange={() => toggleRow(i)} />
+                      <Checkbox checked={selectedIndices?.has(i + indexOffset) || false} onCheckedChange={() => toggleRow(i)} />
                     </td>
                   )}
                   {columns.map((col) => (
@@ -111,16 +119,18 @@ export default function DataTable<T extends Record<string, unknown>>({
           </tbody>
         </table>
       </div>
-      <div className="flex items-center justify-center gap-4 py-3 border-t border-border text-sm text-muted-foreground">
-        {!viewingAll && <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>Previous</button>}
-        <span>{viewingAll ? `Showing all ${totalItems ?? data.length} results` : `Page ${currentPage} of ${totalPages} · ${totalItems ?? data.length} total`}</span>
-        {!viewingAll && <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => onPageChange?.(currentPage + 1)}>Next</button>}
-        {(totalItems ?? data.length) > 20 && (
-          <button className="ml-2 text-xs hover:text-foreground underline underline-offset-2" onClick={() => onPageChange?.(viewingAll ? 1 : 0)}>
-            {viewingAll ? "Paginate" : "View All"}
-          </button>
-        )}
-      </div>
+      {!hideFooter && (
+        <div className="flex items-center justify-center gap-4 py-3 border-t border-border text-sm text-muted-foreground">
+          {!viewingAll && <button className="hover:text-foreground disabled:opacity-50" disabled={currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>Previous</button>}
+          <span>{viewingAll ? `Showing all ${totalItems ?? data.length} results` : `Page ${currentPage} of ${totalPages} · ${totalItems ?? data.length} total`}</span>
+          {!viewingAll && <button className="hover:text-foreground disabled:opacity-50 font-medium" disabled={currentPage >= totalPages} onClick={() => onPageChange?.(currentPage + 1)}>Next</button>}
+          {(totalItems ?? data.length) > 20 && (
+            <button className="ml-2 text-xs hover:text-foreground underline underline-offset-2" onClick={() => onPageChange?.(viewingAll ? 1 : 0)}>
+              {viewingAll ? "Paginate" : "View All"}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

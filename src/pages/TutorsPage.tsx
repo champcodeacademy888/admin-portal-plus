@@ -59,11 +59,8 @@ export default function TutorsPage() {
             <tr className="bg-muted/50 border-b border-border text-left">
               <th className="px-4 py-2.5 font-medium text-muted-foreground w-12">#</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Tutor Name</th>
-              <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">SG Trial</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Contact Number</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Email</th>
-              <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Enrolled Students</th>
-              <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Trial Students</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Paid Sessions</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Trial Sessions</th>
             </tr>

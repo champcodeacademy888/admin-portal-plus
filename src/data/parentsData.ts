@@ -376,8 +376,8 @@ function generateAdditionalEnrolmentParents(): Parent[] {
       const parentId = `#P${70000 + statusIndex * recordsPerStatus + i}`;
       const childStatus: ChildStatus = rand() > 0.5 ? "ENROLLED" : "CLOSED WON";
       const phoneCountryCodes: Record<string, string> = {
-        "Philippines": "+63","Singapore": "+65","Malaysia": "+60","Sri Lanka": "+94",
-        "UAE": "+971","Hong Kong": "+852","Indonesia": "+62",
+        "Philippines": "63","Singapore": "65","Malaysia": "60","Sri Lanka": "94",
+        "UAE": "971","Hong Kong": "852","Indonesia": "62",
       };
 
       const child: Child = {

@@ -236,10 +236,120 @@ function buildStudentPackages() {
 
 const dataset = buildStudentPackages();
 
-export const studentPackages = dataset.packages;
-export const invoices = dataset.invoices;
+export const studentPackages: StudentPackageRecord[] = dataset.packages;
+export const invoices: InvoiceRecord[] = dataset.invoices;
 export { countryFlags };
 
 export function formatMoney(amount: number, currency: string) {
   return `${currency} ${amount.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+// Country mapping from parentsData countries to packagesCatalog countries
+const countryToPackageCountry: Record<string, string> = {
+  Philippines: "Philippines",
+  Singapore: "Singapore",
+  Malaysia: "Malaysia",
+  "Sri Lanka": "Sri Lanka",
+  UAE: "Dubai",
+  "Hong Kong": "Hong Kong",
+  Indonesia: "Indonesia",
+};
+
+export function getPackagesByCountry(parentCountry: string): PackageData[] {
+  const catalogCountry = countryToPackageCountry[parentCountry] || parentCountry;
+  return packageCatalog.filter((p) => p.country === catalogCountry && p.active);
+}
+
+let nextPackageIndex = studentPackages.length;
+
+export function createStudentPackageFromLead(
+  child: ChildWithParent,
+  selectedPackage: PackageData,
+  lessonStartDate: Date
+): { pkg: StudentPackageRecord; newInvoices: InvoiceRecord[] } {
+  const today = new Date();
+  nextPackageIndex++;
+  const packageId = `PKG-${9000 + nextPackageIndex}`;
+  const currency = selectedPackage.currency || currencyByCountry[child.parent.country] || "USD";
+  const totalWeeks = selectedPackage.numberOfLessons || 8;
+  const termCount = Math.max(1, Math.ceil(totalWeeks / WEEKS_PER_TERM));
+  const perTermAmount = selectedPackage.totalAmount > 0
+    ? Math.round(selectedPackage.totalAmount / termCount)
+    : getPerTermAmount(child.parent.country, child.packageInterest);
+  const packageName = selectedPackage.name;
+
+  // Determine if payment is already past due (start date passed without payment)
+  const isPastStartDate = lessonStartDate < today;
+
+  const newInvoices: InvoiceRecord[] = Array.from({ length: termCount }, (_, i) => {
+    const termStartDate = addDays(lessonStartDate, i * DAYS_PER_TERM);
+    const termEndDate = addDays(termStartDate, DAYS_PER_TERM - 1);
+    const dueDate = termStartDate;
+    const issuedDate = addDays(dueDate, -7);
+    const nextInvoiceCreationDate = i < termCount - 1 ? addDays(termEndDate, -7) : undefined;
+
+    // If past start date and not cleared → Overdue
+    const status: InvoiceStatus = (i === 0 && isPastStartDate) ? "Overdue" : "Pending";
+
+    return {
+      id: `INV-${9000 + nextPackageIndex}-${i + 1}`,
+      packageId,
+      leadRecordId: child.parent.id,
+      studentId: child.id,
+      studentName: child.name,
+      parentName: child.parent.name,
+      country: child.parent.country,
+      channel: child.parent.channel,
+      program: child.program || "General Coding",
+      packageName,
+      termNumber: i + 1,
+      termStartDate: format(termStartDate, "d MMM yyyy"),
+      termEndDate: format(termEndDate, "d MMM yyyy"),
+      nextInvoiceCreationDate: nextInvoiceCreationDate ? format(nextInvoiceCreationDate, "d MMM yyyy") : undefined,
+      paymentCollectionDate: format(dueDate, "d MMM yyyy"),
+      dueDate: format(dueDate, "d MMM yyyy"),
+      issuedDate: format(issuedDate, "d MMM yyyy"),
+      amount: perTermAmount,
+      currency,
+      status,
+    };
+  });
+
+  const totalAmount = newInvoices.reduce((s, inv) => s + inv.amount, 0);
+
+  // If past start date and not paid → Payment Failed status for lead, Payment Due for package
+  const pkgStatus: StudentPackageStatus = isPastStartDate ? "Payment Due" : "Pending";
+
+  const pkg: StudentPackageRecord = {
+    id: packageId,
+    leadRecordId: child.parent.id,
+    studentId: child.id,
+    studentName: child.name,
+    parentName: child.parent.name,
+    country: child.parent.country,
+    channel: child.parent.channel,
+    program: child.program || "General Coding",
+    packageName,
+    termCount,
+    totalWeeks,
+    totalInvoices: newInvoices.length,
+    paidInvoices: 0,
+    totalAmount,
+    paidAmount: 0,
+    balanceAmount: totalAmount,
+    currency,
+    status: pkgStatus,
+    packageStartDate: format(lessonStartDate, "d MMM yyyy"),
+    packageEndDate: format(addDays(lessonStartDate, Math.max(totalWeeks * 7 - 1, 0)), "d MMM yyyy"),
+    nextInvoiceCreationDate: newInvoices.find((inv) => inv.status !== "Paid")?.nextInvoiceCreationDate,
+    paymentCollectionDate: newInvoices[0]?.paymentCollectionDate,
+    leadStatus: child.status,
+    invoices: newInvoices,
+  };
+
+  // Add to global arrays
+  studentPackages.push(pkg);
+  invoices.push(...newInvoices);
+
+  return { pkg, newInvoices };
 }

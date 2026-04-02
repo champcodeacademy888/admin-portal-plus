@@ -416,7 +416,7 @@ export default function LeadsPage() {
     { key: "urgency", label: "Urgency" },
     { key: "aiAgent", label: "AI Agent" },
     { key: "assignedTo", label: "Assigned To" },
-    { key: "trialDate", label: "Trial Date" },
+    { key: "trialDate", label: "Date of Trial" },
     { key: "trialTutor", label: "Trial Tutor" },
     { key: "packageInterest", label: "Package Interest" },
     { key: "age", label: "Age" },
@@ -527,7 +527,7 @@ export default function LeadsPage() {
 
   // Determine visible columns based on compact mode
   const effectiveVisibleColumns = compact
-    ? new Set(["studentId", "student", "status", "country", "channel", "lastContacted", "urgency", "actions"])
+    ? new Set(["studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "urgency", "actions"])
     : visibleColumns;
 
   const columns = [
@@ -604,7 +604,7 @@ export default function LeadsPage() {
     { key: "aiAgent", header: "AI Agent", render: (r: ChildWithParent) => <AIStatusBadge status={r.parent.aiAgent} /> },
     { key: "assignedTo", header: "Assigned To", render: (r: ChildWithParent) => <span>{r.parent.assignedTo}</span> },
     {
-      key: "trialDate", header: "Trial Date", render: (r: ChildWithParent) => {
+      key: "trialDate", header: "Date of Trial", render: (r: ChildWithParent) => {
         if (!r.trialDate) return <span className="text-muted-foreground">—</span>;
         return <span className={trialDateColor(r)}>{r.trialDate}</span>;
       },

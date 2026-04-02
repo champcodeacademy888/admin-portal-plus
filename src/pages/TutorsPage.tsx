@@ -57,7 +57,6 @@ export default function TutorsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 border-b border-border text-left">
-              <th className="px-4 py-2.5 font-medium text-muted-foreground w-12">#</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Tutor Name</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Contact Number</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Email</th>

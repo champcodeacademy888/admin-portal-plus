@@ -1190,9 +1190,15 @@ export default function LeadsPage() {
               <div className="border-t border-border px-6 py-4 space-y-2">
                 <button
                   onClick={() => handleOpenCreatePkg(selectedChild)}
-                  className="w-full px-4 py-2.5 bg-accent text-accent-foreground rounded-lg text-sm font-medium hover:bg-accent/80 flex items-center justify-center gap-1.5 mb-1"
+                  className="w-full px-4 py-2.5 bg-accent text-accent-foreground rounded-lg text-sm font-medium hover:bg-accent/80 flex items-center justify-center gap-1.5"
                 >
                   <Package size={14} /> Create Student Package
+                </button>
+                <button
+                  onClick={() => handleOpenArrangeTrial(selectedChild)}
+                  className="w-full px-4 py-2.5 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 flex items-center justify-center gap-1.5"
+                >
+                  <Calendar size={14} /> Arrange Trial
                 </button>
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Mark Trial Booked</button>

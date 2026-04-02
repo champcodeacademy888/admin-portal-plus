@@ -316,7 +316,7 @@ export function getTutorAvailableSlots(tutor: string): { date: string; time: str
     const ds = format(d, "yyyy-MM-dd");
     if (!dateSet.has(ds)) {
       ["10:00","14:00","16:00"].forEach(t => {
-        slots.push({ date: ds, time: t, label: `${format(d, "d MMM yyyy")} at ${t}` });
+        slots.push({ date: ds, time: t, label: `${format(d, "d MMM yyyy")} ${t}` });
       });
     }
   }

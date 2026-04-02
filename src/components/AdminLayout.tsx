@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, ClipboardList, UserPlus,
   CalendarCheck, RefreshCw, ArrowLeftRight,
-  Globe, LogOut, ChevronDown, Package, PanelLeftClose, PanelLeft, FileText, Calendar
+  Globe, LogOut, ChevronDown, Package, PanelLeftClose, PanelLeft, FileText, Calendar, GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

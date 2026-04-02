@@ -3,10 +3,11 @@ import PageHeader from "@/components/PageHeader";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import FilterTabs from "@/components/FilterTabs";
-import { Search, Phone, MessageCircle, Eye, Filter } from "lucide-react";
+import { Search, Phone, MessageCircle, Eye, Filter, Minimize2, Maximize2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getChildrenByStatus, countryFlags, programs, lessonDays, type ChildWithParent } from "@/data/parentsData";
+import { cn } from "@/lib/utils";
 
 const enrolledChildren = getChildrenByStatus("ENROLLED", "CLOSED WON").filter(
   c => c.packageInterest !== "Trial only"
@@ -123,6 +124,7 @@ export default function EnrolmentsPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [programFilter, setProgramFilter] = useState<string>("all");
   const [dayFilter, setDayFilter] = useState<string>("all");
+  const [compact, setCompact] = useState(true);
 
   const filtered = enrolledChildren.filter(c => {
     const tab = statusTabs[activeTab];
@@ -140,6 +142,14 @@ export default function EnrolmentsPage() {
     label: t.label,
     count: enrolledChildren.filter(c => t.statuses.includes(c.enrolmentStatus || "Enrolled")).length,
   }));
+
+  const effectiveColumnKeys = compact
+    ? new Set(["student", "enrolmentStatus", "program", "lessonDay", "country", "channel", "actions"])
+    : null;
+
+  const filteredColumns = effectiveColumnKeys
+    ? columns.filter(column => effectiveColumnKeys.has(column.key))
+    : columns;
 
   return (
     <div>
@@ -173,17 +183,30 @@ export default function EnrolmentsPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <button
+            onClick={() => setCompact(!compact)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 border rounded-lg text-sm transition-colors",
+              compact ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted text-muted-foreground"
+            )}
+            title={compact ? "Standard view" : "Compact view"}
+          >
+            {compact ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+            {compact ? "Standard" : "Compact"}
+          </button>
         </div>
       </PageHeader>
 
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={setActiveTab} />
 
-      <DataTable
-        columns={columns as any}
-        data={filtered as any}
-        totalItems={filtered.length}
-        onRowClick={(row) => { setSelectedChild(row as unknown as ChildWithParent); setPanelOpen(true); }}
-      />
+      <div className={compact ? "[&_td]:py-1.5 [&_th]:py-2" : ""}>
+        <DataTable
+          columns={filteredColumns as any}
+          data={filtered as any}
+          totalItems={filtered.length}
+          onRowClick={(row) => { setSelectedChild(row as unknown as ChildWithParent); setPanelOpen(true); }}
+        />
+      </div>
 
       <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
         <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto p-0">

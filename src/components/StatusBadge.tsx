@@ -32,6 +32,8 @@ const badgeVariants = cva(
         pending_pause: "bg-warning/15 text-warning",
         pending_complete: "bg-info/15 text-info",
         to_confirm: "bg-muted text-muted-foreground",
+        pending_payment: "bg-warning/15 text-warning",
+        payment_failed: "bg-destructive/15 text-destructive",
       },
     },
     defaultVariants: {

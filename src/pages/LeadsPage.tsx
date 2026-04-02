@@ -1288,6 +1288,34 @@ export default function LeadsPage() {
                   </div>
 
                   <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Tutor</label>
+                    <Select value={selectedTutor} onValueChange={setSelectedTutor}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a tutor..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tutorOptions.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Program</label>
+                    <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a program..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {programOptions.map((p) => (
+                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Lesson Start Date</label>
                     <Popover>
                       <PopoverTrigger asChild>

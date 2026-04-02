@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-export type ChildStatus = "INQUIRY" | "LEAD" | "TRIAL ARRANGED" | "TRIAL DONE" | "MISSED TRIAL" | "ENROLLED" | "CLOSED WON" | "LOST";
+export type ChildStatus = "INQUIRY" | "LEAD" | "TRIAL ARRANGED" | "TRIAL DONE" | "MISSED TRIAL" | "PENDING PAYMENT" | "PAYMENT FAILED" | "ENROLLED" | "CLOSED WON" | "LOST";
 export type AIStatus = "active" | "admin" | "completed";
 
 export const programs = [
@@ -88,7 +88,7 @@ const childFirstNames = [
 const countries = ["Philippines","Singapore","Malaysia","Sri Lanka","UAE","Hong Kong","Indonesia"];
 const channels: ("WhatsApp" | "Messenger")[] = ["WhatsApp","Messenger"];
 const sources = ["Meta Ads (Facebook)","Meta Ads (WhatsApp)","Meta Ads (Form)","Referral","Website","Instagram","Google Ads"];
-const childStatuses: ChildStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL DONE","MISSED TRIAL","ENROLLED","CLOSED WON","CLOSED WON","LOST"];
+const childStatuses: ChildStatus[] = ["INQUIRY","LEAD","LEAD","LEAD","TRIAL ARRANGED","TRIAL DONE","MISSED TRIAL","PENDING PAYMENT","PENDING PAYMENT","PAYMENT FAILED","ENROLLED","CLOSED WON","CLOSED WON","LOST"];
 const aiStatuses: AIStatus[] = ["active","active","admin","completed"];
 const admins = ["Sarah A.","James L.","Maria G.","David K."];
 const tutors = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];

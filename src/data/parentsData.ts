@@ -218,7 +218,69 @@ function generateParents(): Parent[] {
   return result;
 }
 
-export const parents = generateParents();
+function generateAdditionalEnrolmentParents(): Parent[] {
+  const result: Parent[] = [];
+  let childIdCounter = 20000;
+  const recordsPerStatus = 50;
+
+  enrolmentStatuses.forEach((enrolmentStatus, statusIndex) => {
+    for (let i = 0; i < recordsPerStatus; i++) {
+      const lastName = pick(lastNames);
+      const country = pick(countries);
+      const channel = pick(channels);
+      const program = programs[(statusIndex * recordsPerStatus + i) % programs.length];
+      const lessonDay = lessonDays[(statusIndex * recordsPerStatus + i) % lessonDays.length];
+      const parentId = `#P${70000 + statusIndex * recordsPerStatus + i}`;
+      const childStatus: ChildStatus = rand() > 0.5 ? "ENROLLED" : "CLOSED WON";
+      const phoneCountryCodes: Record<string, string> = {
+        "Philippines": "+63","Singapore": "+65","Malaysia": "+60","Sri Lanka": "+94",
+        "UAE": "+971","Hong Kong": "+852","Indonesia": "+62",
+      };
+
+      const child: Child = {
+        id: `#S${childIdCounter++}`,
+        name: `${pick(childFirstNames)} ${lastName}`,
+        age: randInt(6, 16),
+        level: pick(levels.filter(level => level !== "—")),
+        status: childStatus,
+        programStatus: pick(programStatuses) ?? "Incomplete",
+        enrolmentStatus,
+        trialDate: `${format(new Date(2026, 2, randInt(1, 28)), "EEE d MMM")}, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`,
+        trialTutor: pick(tutors),
+        packageInterest: pick(packageInterests.filter(pkg => pkg !== "Trial only")),
+        enrolledDate: `${randInt(1, 28)} Mar 2026`,
+        handedOff: rand() > 0.35,
+        program,
+        lessonDay,
+      };
+
+      result.push({
+        id: parentId,
+        name: `${pick(firstNames)} ${lastName}`,
+        phone: `${phoneCountryCodes[country]} ${randInt(900, 999)} ${randInt(100, 999)} ${randInt(1000, 9999)}`,
+        psid: channel === "Messenger" ? `${randInt(1000000000, 9999999999)}` : undefined,
+        country,
+        channel,
+        source: pick(sources),
+        assignedTo: pick(admins),
+        aiAgent: pick(aiStatuses),
+        lastContacted: hrsToLabel(randInt(1, 72)),
+        lastContactedHrs: randInt(1, 72),
+        children: [child],
+        notes: [
+          {
+            text: `Enrolment status updated to ${enrolmentStatus}`,
+            time: `${randInt(1, 30)} Mar 2026, ${randInt(8, 17)}:${String(randInt(0, 59)).padStart(2, "0")} ${randInt(0, 1) ? "AM" : "PM"}`,
+          },
+        ],
+      });
+    }
+  });
+
+  return result;
+}
+
+export const parents = [...generateParents(), ...generateAdditionalEnrolmentParents()];
 
 // Helper: get all children across all parents as flat list with parent reference
 export interface ChildWithParent extends Child {

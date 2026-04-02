@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import FilterTabs from "@/components/FilterTabs";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
-import { Search, MessageCircle, Eye, MoreHorizontal, X, Phone, SlidersHorizontal, AlertTriangle, Calendar, ArrowRight, Download, Users, TrendingUp, LayoutGrid, List, Columns3, Flame, CheckCircle, XCircle, UserCheck, Minimize2, Maximize2 } from "lucide-react";
+import { Search, MessageCircle, Eye, MoreHorizontal, X, Phone, SlidersHorizontal, AlertTriangle, Calendar, ArrowRight, Download, Users, TrendingUp, LayoutGrid, List, Columns3, Flame, CheckCircle, XCircle, UserCheck, Minimize2, Maximize2, Plus, Package } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { parents, countryFlags, todayFormatted, type Parent, type ChildWithParent, type ChildStatus, type AIStatus, getAllChildren } from "@/data/parentsData";
+import { getPackagesByCountry, createStudentPackageFromLead, formatMoney } from "@/data/studentPackagesData";
+import type { PackageData } from "@/data/packagesCatalog";
 
 const today = new Date();
 const todayStr = todayFormatted;
@@ -448,6 +450,41 @@ export default function LeadsPage() {
   // Inline lost reason for quick action
   const [inlineLostIndex, setInlineLostIndex] = useState<number | null>(null);
 
+  // Create Student Package dialog state
+  const [createPkgOpen, setCreatePkgOpen] = useState(false);
+  const [createPkgTarget, setCreatePkgTarget] = useState<ChildWithParent | null>(null);
+  const [selectedCatalogPkg, setSelectedCatalogPkg] = useState<string>("");
+  const [lessonStartDate, setLessonStartDate] = useState<Date | undefined>();
+  const [createPkgSuccess, setCreatePkgSuccess] = useState<string | null>(null);
+
+  const availablePackages = useMemo(() => {
+    if (!createPkgTarget) return [];
+    return getPackagesByCountry(createPkgTarget.parent.country);
+  }, [createPkgTarget]);
+
+  const handleOpenCreatePkg = (child: ChildWithParent) => {
+    setCreatePkgTarget(child);
+    setSelectedCatalogPkg("");
+    setLessonStartDate(undefined);
+    setCreatePkgSuccess(null);
+    setCreatePkgOpen(true);
+  };
+
+  const handleConfirmCreatePkg = () => {
+    if (!createPkgTarget || !selectedCatalogPkg || !lessonStartDate) return;
+    const catalogPkg = availablePackages.find((p) => String(p.id) === selectedCatalogPkg);
+    if (!catalogPkg) return;
+
+    const { pkg } = createStudentPackageFromLead(createPkgTarget, catalogPkg, lessonStartDate);
+
+    // If past start date → lead becomes PAYMENT FAILED
+    const isPast = lessonStartDate < new Date();
+    if (isPast) {
+      setCreatePkgSuccess(`Created ${pkg.id} with status Payment Due (start date passed → Payment Failed).`);
+    } else {
+      setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated.`);
+    }
+  };
   const filteredLeads = useMemo(() => {
     let result = allLeadChildren.filter((child) => {
       const tab = tabs[activeTab].label;
@@ -1104,6 +1141,12 @@ export default function LeadsPage() {
               </div>
 
               <div className="border-t border-border px-6 py-4 space-y-2">
+                <button
+                  onClick={() => handleOpenCreatePkg(selectedChild)}
+                  className="w-full px-4 py-2.5 bg-accent text-accent-foreground rounded-lg text-sm font-medium hover:bg-accent/80 flex items-center justify-center gap-1.5 mb-1"
+                >
+                  <Package size={14} /> Create Student Package
+                </button>
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Mark Trial Booked</button>
                   <button onClick={() => handleMarkAsLost(selectedChild)} className="flex-1 px-4 py-2.5 border border-destructive text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10">Mark as Lost</button>
@@ -1187,6 +1230,100 @@ export default function LeadsPage() {
           <DialogFooter>
             <button onClick={() => setReengageOpen(false)} className="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted">Cancel</button>
             <button onClick={confirmReengage} disabled={!reengageDate} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50">Set Reminder</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Student Package Dialog */}
+      <Dialog open={createPkgOpen} onOpenChange={setCreatePkgOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Create Student Package</DialogTitle>
+          </DialogHeader>
+          {createPkgTarget && (
+            <div className="space-y-4 py-2">
+              {createPkgSuccess ? (
+                <div className="rounded-lg bg-success/10 border border-success/30 p-4 text-sm text-success">
+                  <CheckCircle className="inline mr-1.5" size={14} />
+                  {createPkgSuccess}
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground text-xs block mb-1">Student</span>
+                      <span className="font-medium">{createPkgTarget.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs block mb-1">Country</span>
+                      <span>{countryFlags[createPkgTarget.parent.country]} {createPkgTarget.parent.country}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Select Package</label>
+                    {availablePackages.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No packages available for {createPkgTarget.parent.country}</p>
+                    ) : (
+                      <Select value={selectedCatalogPkg} onValueChange={setSelectedCatalogPkg}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a package..." />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {availablePackages.map((p) => (
+                            <SelectItem key={p.id} value={String(p.id)}>
+                              {p.name} {p.totalAmount > 0 && `— ${p.currency} ${p.totalAmount.toLocaleString()}`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Lesson Start Date</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className={cn(
+                          "w-full justify-start text-left font-normal px-3 py-2 border border-border rounded-lg text-sm flex items-center gap-2",
+                          !lessonStartDate && "text-muted-foreground"
+                        )}>
+                          <Calendar size={14} />
+                          {lessonStartDate ? format(lessonStartDate, "d MMM yyyy") : "Pick a start date"}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={lessonStartDate}
+                          onSelect={setLessonStartDate}
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {lessonStartDate && lessonStartDate < new Date() && (
+                      <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
+                        <AlertTriangle size={12} /> Start date is in the past — status will be set to Payment Failed
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <button onClick={() => setCreatePkgOpen(false)} className="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted">
+              {createPkgSuccess ? "Close" : "Cancel"}
+            </button>
+            {!createPkgSuccess && (
+              <button
+                onClick={handleConfirmCreatePkg}
+                disabled={!selectedCatalogPkg || !lessonStartDate}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+              >
+                Create Package & Invoice
+              </button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

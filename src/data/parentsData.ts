@@ -407,7 +407,7 @@ function generateAdditionalEnrolmentParents(): Parent[] {
       result.push({
         id: parentId,
         name: `${pick(firstNames)} ${lastName}`,
-        phone: `${phoneCountryCodes[country]} ${randInt(900, 999)} ${randInt(100, 999)} ${randInt(1000, 9999)}`,
+        phone: `${phoneCountryCodes[country]}${randInt(900, 999)}${randInt(100, 999)}${randInt(1000, 9999)}`,
         psid: channel === "Messenger" ? `${randInt(1000000000, 9999999999)}` : undefined,
         country,
         channel,

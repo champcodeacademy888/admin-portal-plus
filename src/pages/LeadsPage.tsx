@@ -461,6 +461,22 @@ export default function LeadsPage() {
   const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [createPkgSuccess, setCreatePkgSuccess] = useState<string | null>(null);
 
+  // Arrange Trial dialog state
+  const [arrangeTrialOpen, setArrangeTrialOpen] = useState(false);
+  const [arrangeTrialTarget, setArrangeTrialTarget] = useState<ChildWithParent | null>(null);
+  const [trialTutor, setTrialTutor] = useState<string>("");
+  const [trialProgram, setTrialProgram] = useState<string>("");
+  const [trialSlot, setTrialSlot] = useState<string>("");
+  const [trialDate, setTrialDate] = useState<Date | undefined>();
+  const [arrangeTrialSuccess, setArrangeTrialSuccess] = useState<string | null>(null);
+
+  const trialProgramOptions = ["Minecraft Trial","Roblox Trial","Scratch Trial","Web Design Trial","Python Trial","AI Trial"];
+
+  const trialAvailableSlots = useMemo(() => {
+    if (!trialTutor) return [];
+    return getTutorAvailableSlots(trialTutor);
+  }, [trialTutor]);
+
   const tutorOptions = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
   const programOptions = ["Scratch","Python","Web Development","Roblox","Minecraft","JavaScript","Data Science","AI & Machine Learning"];
 
@@ -499,6 +515,22 @@ export default function LeadsPage() {
     } else {
       setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated.`);
     }
+  };
+
+  const handleOpenArrangeTrial = (child: ChildWithParent) => {
+    setArrangeTrialTarget(child);
+    setTrialTutor("");
+    setTrialProgram("");
+    setTrialSlot("");
+    setTrialDate(undefined);
+    setArrangeTrialSuccess(null);
+    setArrangeTrialOpen(true);
+  };
+
+  const handleConfirmArrangeTrial = () => {
+    if (!arrangeTrialTarget || !trialTutor || !trialProgram || !trialDate) return;
+    const formattedDate = format(trialDate, "EEE d MMM, HH:mm");
+    setArrangeTrialSuccess(`Trial arranged for ${arrangeTrialTarget.name} — ${trialProgram} with ${trialTutor} on ${formattedDate}`);
   };
   const filteredLeads = useMemo(() => {
     let result = allLeadChildren.filter((child) => {
@@ -1158,9 +1190,15 @@ export default function LeadsPage() {
               <div className="border-t border-border px-6 py-4 space-y-2">
                 <button
                   onClick={() => handleOpenCreatePkg(selectedChild)}
-                  className="w-full px-4 py-2.5 bg-accent text-accent-foreground rounded-lg text-sm font-medium hover:bg-accent/80 flex items-center justify-center gap-1.5 mb-1"
+                  className="w-full px-4 py-2.5 bg-accent text-accent-foreground rounded-lg text-sm font-medium hover:bg-accent/80 flex items-center justify-center gap-1.5"
                 >
                   <Package size={14} /> Create Student Package
+                </button>
+                <button
+                  onClick={() => handleOpenArrangeTrial(selectedChild)}
+                  className="w-full px-4 py-2.5 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 flex items-center justify-center gap-1.5"
+                >
+                  <Calendar size={14} /> Arrange Trial
                 </button>
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">Mark Trial Booked</button>
@@ -1372,6 +1410,110 @@ export default function LeadsPage() {
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
               >
                 Create Package & Invoice
+              </button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Arrange Trial Dialog */}
+      <Dialog open={arrangeTrialOpen} onOpenChange={setArrangeTrialOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Arrange Trial</DialogTitle>
+          </DialogHeader>
+          {arrangeTrialTarget && (
+            <div className="space-y-4 py-2">
+              {arrangeTrialSuccess ? (
+                <div className="rounded-lg bg-success/10 border border-success/30 p-4 text-sm text-success">
+                  <CheckCircle className="inline mr-1.5" size={14} />
+                  {arrangeTrialSuccess}
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground text-xs block mb-1">Student</span>
+                      <span className="font-medium">{arrangeTrialTarget.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs block mb-1">Country</span>
+                      <span>{countryFlags[arrangeTrialTarget.parent.country]} {arrangeTrialTarget.parent.country}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Tutor</label>
+                    <Select value={trialTutor} onValueChange={(val) => { setTrialTutor(val); setTrialSlot(""); setTrialDate(undefined); }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a tutor..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tutorOptions.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Trial Program</label>
+                    <Select value={trialProgram} onValueChange={setTrialProgram}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a trial program..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {trialProgramOptions.map((p) => (
+                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Date of Trial</label>
+                    {!trialTutor ? (
+                      <p className="text-sm text-muted-foreground">Select a tutor first to see available slots</p>
+                    ) : trialAvailableSlots.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No available slots for {trialTutor}</p>
+                    ) : (
+                      <Select value={trialSlot} onValueChange={(val) => {
+                        setTrialSlot(val);
+                        const slot = trialAvailableSlots.find(s => `${s.date}_${s.time}` === val);
+                        if (slot) {
+                          const [y, m, d] = slot.date.split("-").map(Number);
+                          const [h, min] = slot.time.split(":").map(Number);
+                          setTrialDate(new Date(y, m - 1, d, h, min));
+                        }
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a date & time..." />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {trialAvailableSlots.map((s) => (
+                            <SelectItem key={`${s.date}_${s.time}`} value={`${s.date}_${s.time}`}>
+                              {s.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <button onClick={() => setArrangeTrialOpen(false)} className="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted">
+              {arrangeTrialSuccess ? "Close" : "Cancel"}
+            </button>
+            {!arrangeTrialSuccess && (
+              <button
+                onClick={handleConfirmArrangeTrial}
+                disabled={!trialTutor || !trialProgram || !trialSlot}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+              >
+                Arrange Trial
               </button>
             )}
           </DialogFooter>

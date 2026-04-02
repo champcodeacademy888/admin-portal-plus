@@ -15,6 +15,7 @@ import InvoicingPage from "./pages/InvoicingPage";
 import AttendancePage from "./pages/AttendancePage";
 import MakeupsPage from "./pages/MakeupsPage";
 import CoverPage from "./pages/CoverPage";
+import TutorsPage from "./pages/TutorsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/makeups" element={<MakeupsPage />} />
             <Route path="/cover" element={<CoverPage />} />
+            <Route path="/tutors" element={<TutorsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AdminLayout>

@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { parents, countryFlags, todayFormatted, type Parent, type ChildWithParent, type ChildStatus, type AIStatus, getAllChildren } from "@/data/parentsData";
 import { getPackagesByCountry, createStudentPackageFromLead, formatMoney } from "@/data/studentPackagesData";
 import { getTutorAvailableSlots } from "@/data/calendarData";
+import { tutorNames } from "@/data/tutorsData";
 import type { PackageData } from "@/data/packagesCatalog";
 
 const today = new Date();
@@ -478,7 +479,7 @@ export default function LeadsPage() {
     return getTutorAvailableSlots(trialTutor);
   }, [trialTutor]);
 
-  const tutorOptions = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
+  const tutorOptions = tutorNames;
   const programOptions = ["Scratch","Python","Web Development","Roblox","Minecraft","JavaScript","Data Science","AI & Machine Learning"];
 
   const availableSlots = useMemo(() => {

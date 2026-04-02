@@ -182,6 +182,56 @@ function hrsToLabel(hrs: number): string {
   return days === 1 ? "1 day ago" : `${days} days ago`;
 }
 
+type TrialSlot = {
+  trialDate: string;
+  trialTutor: string;
+  trialPassed?: boolean;
+  trialOutcomeMarked?: boolean;
+  hoursSinceTrial?: number;
+};
+
+function createTrialSlotPool(status: "TRIAL ARRANGED" | "TRIAL DONE", count: number): TrialSlot[] {
+  return Array.from({ length: count }, () => {
+    const date = new Date(today);
+
+    if (status === "TRIAL ARRANGED") {
+      const dayOffset = randInt(-3, 10);
+      date.setDate(date.getDate() + dayOffset);
+
+      return {
+        trialDate: format(date, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`,
+        trialTutor: pick(tutors),
+        trialPassed: dayOffset < 0,
+        trialOutcomeMarked: dayOffset < 0 ? rand() > 0.5 : false,
+      };
+    }
+
+    const dayOffset = randInt(-10, -1);
+    date.setDate(date.getDate() + dayOffset);
+
+    return {
+      trialDate: format(date, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`,
+      trialTutor: pick(tutors),
+      hoursSinceTrial: randInt(2, 96),
+    };
+  });
+}
+
+const arrangedTrialSlotPool = createTrialSlotPool("TRIAL ARRANGED", 18);
+const completedTrialSlotPool = createTrialSlotPool("TRIAL DONE", 16);
+
+function getTrialSlot(status: "TRIAL ARRANGED" | "TRIAL DONE"): TrialSlot {
+  const useSharedSlot = rand() < 0.72;
+
+  if (useSharedSlot) {
+    return status === "TRIAL ARRANGED"
+      ? pick(arrangedTrialSlotPool)
+      : pick(completedTrialSlotPool);
+  }
+
+  return createTrialSlotPool(status, 1)[0];
+}
+
 function generateParents(): Parent[] {
   const result: Parent[] = [];
   let childIdCounter = 10000;
@@ -220,22 +270,18 @@ function generateParents(): Parent[] {
       };
 
       if (childStatus === "TRIAL ARRANGED") {
-        const dayOffset = randInt(-3, 10);
-        const d = new Date(today);
-        d.setDate(d.getDate() + dayOffset);
-        child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
-        child.trialTutor = pick(tutors);
-        child.trialPassed = dayOffset < 0;
-        child.trialOutcomeMarked = dayOffset < 0 ? rand() > 0.5 : false;
+        const trialSlot = getTrialSlot("TRIAL ARRANGED");
+        child.trialDate = trialSlot.trialDate;
+        child.trialTutor = trialSlot.trialTutor;
+        child.trialPassed = trialSlot.trialPassed;
+        child.trialOutcomeMarked = trialSlot.trialOutcomeMarked;
       }
 
       if (childStatus === "TRIAL DONE") {
-        const dayOffset = randInt(-10, -1);
-        const d = new Date(today);
-        d.setDate(d.getDate() + dayOffset);
-        child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
-        child.trialTutor = pick(tutors);
-        child.hoursSinceTrial = randInt(2, 96);
+        const trialSlot = getTrialSlot("TRIAL DONE");
+        child.trialDate = trialSlot.trialDate;
+        child.trialTutor = trialSlot.trialTutor;
+        child.hoursSinceTrial = trialSlot.hoursSinceTrial;
         child.packageInterest = pick(packageInterests);
       }
 

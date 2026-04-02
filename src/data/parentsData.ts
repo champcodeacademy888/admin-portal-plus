@@ -277,7 +277,7 @@ function generateParents(): Parent[] {
         child.trialOutcomeMarked = trialSlot.trialOutcomeMarked;
       }
 
-      if (childStatus === "TRIAL DONE") {
+      if (childStatus === "TRIAL DONE" || childStatus === "PENDING PAYMENT" || childStatus === "PAYMENT FAILED") {
         const trialSlot = getTrialSlot("TRIAL DONE");
         child.trialDate = trialSlot.trialDate;
         child.trialTutor = trialSlot.trialTutor;

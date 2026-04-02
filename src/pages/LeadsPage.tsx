@@ -408,6 +408,7 @@ export default function LeadsPage() {
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [compact, setCompact] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
     "studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "urgency", "actions"
   ]));
@@ -508,12 +509,18 @@ export default function LeadsPage() {
 
     const { pkg } = createStudentPackageFromLead(createPkgTarget, catalogPkg, lessonStartDate);
 
-    // If past start date → lead becomes PAYMENT FAILED
     const isPast = lessonStartDate < new Date();
+    // Update lead status
+    createPkgTarget.status = (isPast ? "PAYMENT FAILED" : "PENDING PAYMENT") as ChildStatus;
+    createPkgTarget.program = selectedProgram;
+    createPkgTarget.tutor = selectedTutor;
+    createPkgTarget.lessonStartDate = format(lessonStartDate, "d MMM yyyy");
+    setRefreshKey(k => k + 1);
+
     if (isPast) {
       setCreatePkgSuccess(`Created ${pkg.id} with status Payment Due (start date passed → Payment Failed).`);
     } else {
-      setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated.`);
+      setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated. Lead status → Pending Payment.`);
     }
   };
 
@@ -530,10 +537,10 @@ export default function LeadsPage() {
   const handleConfirmArrangeTrial = () => {
     if (!arrangeTrialTarget || !trialTutor || !trialProgram || !trialDate) return;
     const formattedDate = format(trialDate, "EEE d MMM, HH:mm");
-    // Update the lead status to TRIAL ARRANGED and set trial details
     arrangeTrialTarget.status = "TRIAL ARRANGED" as ChildStatus;
     arrangeTrialTarget.trialTutor = trialTutor;
     arrangeTrialTarget.trialDate = formattedDate;
+    setRefreshKey(k => k + 1);
     setArrangeTrialSuccess(`Trial arranged for ${arrangeTrialTarget.name} — ${trialProgram} with ${trialTutor} on ${formattedDate}`);
   };
   const filteredLeads = useMemo(() => {
@@ -553,7 +560,7 @@ export default function LeadsPage() {
     }
 
     return result;
-  }, [activeTab, search, countryFilter, channelFilter]);
+  }, [activeTab, search, countryFilter, channelFilter, refreshKey]);
 
   const parseTrialDate = (value?: string) => {
     if (!value) return Number.NEGATIVE_INFINITY;

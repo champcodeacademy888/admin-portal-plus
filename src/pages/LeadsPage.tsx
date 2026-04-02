@@ -537,10 +537,10 @@ export default function LeadsPage() {
   const handleConfirmArrangeTrial = () => {
     if (!arrangeTrialTarget || !trialTutor || !trialProgram || !trialDate) return;
     const formattedDate = format(trialDate, "EEE d MMM, HH:mm");
-    // Update the lead status to TRIAL ARRANGED and set trial details
     arrangeTrialTarget.status = "TRIAL ARRANGED" as ChildStatus;
     arrangeTrialTarget.trialTutor = trialTutor;
     arrangeTrialTarget.trialDate = formattedDate;
+    setRefreshKey(k => k + 1);
     setArrangeTrialSuccess(`Trial arranged for ${arrangeTrialTarget.name} — ${trialProgram} with ${trialTutor} on ${formattedDate}`);
   };
   const filteredLeads = useMemo(() => {

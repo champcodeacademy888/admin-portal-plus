@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { parents, countryFlags, todayFormatted, type Parent, type ChildWithParent, type ChildStatus, type AIStatus, getAllChildren } from "@/data/parentsData";
 import { getPackagesByCountry, createStudentPackageFromLead, formatMoney } from "@/data/studentPackagesData";
 import { getTutorAvailableSlots } from "@/data/calendarData";
+import { tutorNames } from "@/data/tutorsData";
 import type { PackageData } from "@/data/packagesCatalog";
 
 const today = new Date();

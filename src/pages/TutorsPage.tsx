@@ -60,6 +60,8 @@ export default function TutorsPage() {
               <th className="px-4 py-2.5 font-medium text-muted-foreground w-12">#</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Tutor Name</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">SG Trial</th>
+              <th className="px-4 py-2.5 font-medium text-muted-foreground">Contact Number</th>
+              <th className="px-4 py-2.5 font-medium text-muted-foreground">Email</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Enrolled Students</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Trial Students</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Paid Sessions</th>
@@ -70,7 +72,7 @@ export default function TutorsPage() {
             {grouped.map(([country, countryTutors]) => (
               <> 
                 <tr key={`group-${country}`} className="bg-primary/5 border-t border-border">
-                  <td colSpan={7} className="px-4 py-2 font-semibold text-sm">
+                  <td colSpan={9} className="px-4 py-2 font-semibold text-sm">
                     {tutorCountryFlags[country] || ""} {country}
                   </td>
                 </tr>
@@ -81,6 +83,8 @@ export default function TutorsPage() {
                     <td className="px-4 py-2.5 text-center">
                       {tutor.isSingaporeTrial && <span className="text-success">✓</span>}
                     </td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{tutor.contactNumber}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{tutor.email}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.enrolledStudents || "—"}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.trialStudents || "—"}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>

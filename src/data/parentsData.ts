@@ -32,6 +32,7 @@ export interface Child {
   lessonDay?: string;
   tutor?: string;
   lessonStartDate?: string;
+  lessonPauseDate?: string;
   lessonsCompleted?: number;
 }
 
@@ -95,6 +96,29 @@ const levels = ["—","Beginner","Intermediate","Advanced"];
 const packageInterests = ["8 lessons / month","4 lessons / month","Trial only","16 lessons / month","10 lessons / month"];
 const programStatuses: Array<Child["programStatus"]> = ["Transferred", "Complete", "Incomplete"];
 const enrolmentStatuses: Array<NonNullable<Child["enrolmentStatus"]>> = ["Enrolled", "Paused", "Pending Pause", "Pending Complete", "Complete", "To Confirm"];
+const maxLessonsByProgram: Record<string, number> = {
+  "Scratch": 22,
+  "Basic Computer Minecraft": 3,
+  "Basic Computer Roblox": 3,
+  "Minecraft": 23,
+  "Minecraft Level 2": 23,
+  "Minecraft Project 1": 10,
+  "Minecraft Project 2": 10,
+  "Minecraft Project 3": 10,
+  "Minecraft Project 4": 10,
+  "Minecraft Project 5": 10,
+  "Roblox": 23,
+  "Roblox AI Debugging": 6,
+  "Roblox Level 2": 23,
+  "Roblox Project 1": 10,
+  "Roblox Project 2": 10,
+  "Roblox Project 3": 10,
+  "Roblox Project 4": 10,
+  "Roblox Project 5": 10,
+  "Website Design": 18,
+  "Python": 16,
+  "Crypto": 6,
+};
 const lostReasons = ["Price","Timing","Chose competitor","Not interested","No response"];
 const noteTexts = [
   "Parent interested in weekend classes","Trial went well, follow up for enrollment",
@@ -117,6 +141,41 @@ function seededRandom(seed: number) {
 const rand = seededRandom(42);
 const pick = <T,>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
 const randInt = (min: number, max: number) => Math.floor(rand() * (max - min + 1)) + min;
+
+function getMaxLessons(program?: string) {
+  return program ? maxLessonsByProgram[program] ?? 10 : 10;
+}
+
+function getLessonsCompleted(program: string | undefined, enrolmentStatus: Child["enrolmentStatus"]) {
+  const maxLessons = getMaxLessons(program);
+
+  switch (enrolmentStatus) {
+    case "Complete":
+      return maxLessons;
+    case "Pending Complete":
+      return Math.max(0, maxLessons - randInt(0, 2));
+    case "To Confirm":
+      return randInt(0, Math.min(2, maxLessons));
+    default:
+      return randInt(0, Math.max(0, maxLessons - 1));
+  }
+}
+
+function getLessonPauseDate(enrolmentStatus: Child["enrolmentStatus"]) {
+  if (enrolmentStatus === "Paused") {
+    const date = new Date(today);
+    date.setDate(date.getDate() - randInt(1, 21));
+    return format(date, "d MMM yyyy");
+  }
+
+  if (enrolmentStatus === "Pending Pause") {
+    const date = new Date(today);
+    date.setDate(date.getDate() + randInt(1, 14));
+    return format(date, "d MMM yyyy");
+  }
+
+  return undefined;
+}
 
 function hrsToLabel(hrs: number): string {
   if (hrs < 1) return "just now";
@@ -186,19 +245,22 @@ function generateParents(): Parent[] {
         const dayOffset = randInt(-30, -5);
         const d = new Date(today);
         const lessonStart = new Date(d);
+        const enrolmentStatus = pick(enrolmentStatuses);
+        const program = pick(programs);
         lessonStart.setDate(lessonStart.getDate() + randInt(1, 14));
         d.setDate(d.getDate() + dayOffset);
         child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
         child.trialTutor = pick(tutors);
         child.packageInterest = pick(packageInterests);
         child.enrolledDate = `${randInt(1, 28)} Mar 2026`;
-        child.program = pick(programs);
+        child.program = program;
         child.lessonDay = pick(lessonDays);
         child.tutor = pick(tutors);
         child.lessonStartDate = format(lessonStart, "d MMM yyyy");
-        child.lessonsCompleted = randInt(0, 48);
-        child.programStatus = pick(programStatuses) ?? "Incomplete";
-        child.enrolmentStatus = pick(enrolmentStatuses);
+        child.enrolmentStatus = enrolmentStatus;
+        child.lessonPauseDate = getLessonPauseDate(enrolmentStatus);
+        child.lessonsCompleted = getLessonsCompleted(program, enrolmentStatus);
+        child.programStatus = enrolmentStatus === "Complete" ? "Complete" : (pick(programStatuses) ?? "Incomplete");
       }
 
       if (childStatus === "LOST") {
@@ -259,8 +321,13 @@ function generateAdditionalEnrolmentParents(): Parent[] {
         lessonDay,
         tutor: pick(tutors),
         lessonStartDate: `${randInt(1, 28)} Apr 2026`,
-        lessonsCompleted: randInt(0, 48),
+        lessonPauseDate: getLessonPauseDate(enrolmentStatus),
+        lessonsCompleted: getLessonsCompleted(program, enrolmentStatus),
       };
+
+      if (enrolmentStatus === "Complete") {
+        child.programStatus = "Complete";
+      }
 
       result.push({
         id: parentId,

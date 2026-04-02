@@ -162,11 +162,11 @@ export default function TutorPerformancePage() {
       <div className="flex gap-4 mb-6">
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-success/10 border border-success/20">
           <ThumbsUp size={16} className="text-success" />
-          <span className="text-sm font-medium">{complimentCount} Compliments</span>
+          <span className="text-sm font-medium">{filtered.filter(r => r.type === "Compliment").length} Compliments</span>
         </div>
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
           <ThumbsDown size={16} className="text-destructive" />
-          <span className="text-sm font-medium">{complaintCount} Complaints</span>
+          <span className="text-sm font-medium">{filtered.filter(r => r.type === "Complaint").length} Complaints</span>
         </div>
       </div>
 

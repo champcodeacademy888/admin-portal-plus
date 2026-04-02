@@ -297,11 +297,15 @@ export function getTutorAvailableSlots(tutor: string): { date: string; time: str
   // For each date the tutor has classes, offer time slots around their schedule
   const slots: { date: string; time: string; label: string }[] = [];
   const allTimes = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
+  const formatLabel = (dateStr: string, time: string) => {
+    const parsed = parse(dateStr, "yyyy-MM-dd", new Date());
+    return `${format(parsed, "d MMM yyyy")} ${time}`;
+  };
   dateSet.forEach(dateStr => {
     const busyTimes = new Set(tutorRecords.filter(r => r.date === dateStr).map(r => r.time));
     allTimes.forEach(t => {
       if (!busyTimes.has(t)) {
-        slots.push({ date: dateStr, time: t, label: `${dateStr} at ${t}` });
+        slots.push({ date: dateStr, time: t, label: formatLabel(dateStr, t) });
       }
     });
   });

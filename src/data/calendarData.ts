@@ -155,14 +155,14 @@ function buildPaidSessions(): RawCalendarSession[] {
       const slot = TIME_SLOTS[hashValue(`${child.tutor}-${child.lessonDay}`) % TIME_SLOTS.length];
       const sharedWeekOffset = hashValue(`${child.program}-${child.parent.country}`) % 6;
 
-      return Array.from({ length: 2 }, (_, index) => {
+      return Array.from({ length: 2 }).reduce<RawCalendarSession[]>((sessions, _, index) => {
         const sharedLessonDate = getSharedLessonDate(child.lessonDay!, sharedWeekOffset + index);
         const lessonDate = sharedLessonDate ?? (firstLessonDate ? addWeeks(firstLessonDate, index) : null);
-        if (!lessonDate) return null;
+        if (!lessonDate) return sessions;
 
         const session = createSession(lessonDate, slot);
 
-        return {
+        sessions.push({
           timestamp: session.getTime(),
           date: format(session, "yyyy-MM-dd"),
           time: format(session, "HH:mm"),
@@ -175,8 +175,10 @@ function buildPaidSessions(): RawCalendarSession[] {
           country: child.parent.country,
           student: child.name,
           parent: child.parent.name,
-        };
-      }).filter((session): session is RawCalendarSession => Boolean(session));
+        });
+
+        return sessions;
+      }, []);
     });
 }
 

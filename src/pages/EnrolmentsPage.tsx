@@ -166,6 +166,15 @@ export default function EnrolmentsPage() {
     count: enrolledChildren.filter(c => t.statuses.includes(c.enrolmentStatus || "Enrolled")).length,
   }));
 
+  const groupedByProgram = Object.entries(
+    filtered.reduce<Record<string, ChildWithParent[]>>((acc, child) => {
+      const program = child.program || "Unassigned Program";
+      if (!acc[program]) acc[program] = [];
+      acc[program].push(child);
+      return acc;
+    }, {})
+  ).sort(([programA], [programB]) => programA.localeCompare(programB));
+
   const effectiveColumnKeys = compact
     ? new Set(["student", "enrolmentStatus", "program", "tutor", "lessonStartDate", "lessonPauseDate", "lessonsCompleted", "country", "channel", "actions"])
     : null;
@@ -223,12 +232,39 @@ export default function EnrolmentsPage() {
       <FilterTabs tabs={tabs} activeIndex={activeTab} onChange={setActiveTab} />
 
       <div className={compact ? "[&_td]:py-1.5 [&_th]:py-2" : ""}>
-        <DataTable
-          columns={filteredColumns as any}
-          data={filtered as any}
-          totalItems={filtered.length}
-          onRowClick={(row) => { setSelectedChild(row as unknown as ChildWithParent); setPanelOpen(true); }}
-        />
+        {activeTab === 0 ? (
+          <DataTable
+            columns={filteredColumns as any}
+            data={filtered as any}
+            totalItems={filtered.length}
+            onRowClick={(row) => { setSelectedChild(row as unknown as ChildWithParent); setPanelOpen(true); }}
+          />
+        ) : groupedByProgram.length === 0 ? (
+          <DataTable
+            columns={filteredColumns as any}
+            data={filtered as any}
+            totalItems={filtered.length}
+            emptyMessage="No enrolments found"
+            onRowClick={(row) => { setSelectedChild(row as unknown as ChildWithParent); setPanelOpen(true); }}
+          />
+        ) : (
+          <div className="space-y-6">
+            {groupedByProgram.map(([program, rows]) => (
+              <section key={program} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-foreground">{program}</h2>
+                  <span className="text-xs text-muted-foreground">{rows.length} record{rows.length === 1 ? "" : "s"}</span>
+                </div>
+                <DataTable
+                  columns={filteredColumns as any}
+                  data={rows as any}
+                  totalItems={rows.length}
+                  onRowClick={(row) => { setSelectedChild(row as unknown as ChildWithParent); setPanelOpen(true); }}
+                />
+              </section>
+            ))}
+          </div>
+        )}
       </div>
 
       <Sheet open={panelOpen} onOpenChange={setPanelOpen}>

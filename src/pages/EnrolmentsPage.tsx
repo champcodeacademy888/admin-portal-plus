@@ -48,7 +48,6 @@ const columns = [
         <div className="flex items-center gap-1.5">
           <span className="text-[11px] text-muted-foreground font-mono">{r.id}</span>
           <span className="font-medium">{r.name}</span>
-          {r.handedOff && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-success/15 text-success">Handed Off</span>}
         </div>
         <div className="text-[11px] text-muted-foreground mt-0.5">Age {r.age} · {r.level}</div>
       </div>
@@ -82,6 +81,21 @@ const columns = [
   {
     key: "lessonDay", header: "Lesson Day", render: (r: ChildWithParent) => (
       <span className="text-sm">{r.lessonDay || "—"}</span>
+    ),
+  },
+  {
+    key: "tutor", header: "Tutor", render: (r: ChildWithParent) => (
+      <span className="text-sm">{r.tutor || "—"}</span>
+    ),
+  },
+  {
+    key: "lessonStartDate", header: "Lesson Start Date", render: (r: ChildWithParent) => (
+      <span className="text-sm">{r.lessonStartDate || "—"}</span>
+    ),
+  },
+  {
+    key: "lessonsCompleted", header: "Lessons Completed", render: (r: ChildWithParent) => (
+      <span className="text-sm">{r.lessonsCompleted ?? "—"}</span>
     ),
   },
   {
@@ -144,7 +158,7 @@ export default function EnrolmentsPage() {
   }));
 
   const effectiveColumnKeys = compact
-    ? new Set(["student", "enrolmentStatus", "program", "lessonDay", "country", "channel", "actions"])
+    ? new Set(["student", "enrolmentStatus", "program", "tutor", "lessonStartDate", "lessonsCompleted", "country", "channel", "actions"])
     : null;
 
   const filteredColumns = effectiveColumnKeys
@@ -227,7 +241,10 @@ export default function EnrolmentsPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Enrolment Status</span><span>{selectedChild.enrolmentStatus || "Enrolled"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Program</span><span>{selectedChild.program || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Lesson Day</span><span>{selectedChild.lessonDay || "—"}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Tutor</span><span>{selectedChild.tutor || "—"}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Lesson Start Date</span><span>{selectedChild.lessonStartDate || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Package</span><span>{selectedChild.packageInterest || "—"}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Lessons Completed</span><span>{selectedChild.lessonsCompleted ?? "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Enrolled</span><span>{selectedChild.enrolledDate || "—"}</span></div>
                 </div>
                 <div className="border-t border-border pt-4">

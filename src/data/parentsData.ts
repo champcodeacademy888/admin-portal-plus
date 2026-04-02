@@ -28,9 +28,11 @@ export interface Child {
   packageInterest?: string;
   lostReason?: string;
   enrolledDate?: string;
-  handedOff?: boolean;
   program?: string;
   lessonDay?: string;
+  tutor?: string;
+  lessonStartDate?: string;
+  lessonsCompleted?: number;
 }
 
 export interface Parent {
@@ -183,14 +185,18 @@ function generateParents(): Parent[] {
       if (childStatus === "ENROLLED" || childStatus === "CLOSED WON") {
         const dayOffset = randInt(-30, -5);
         const d = new Date(today);
+        const lessonStart = new Date(d);
+        lessonStart.setDate(lessonStart.getDate() + randInt(1, 14));
         d.setDate(d.getDate() + dayOffset);
         child.trialDate = format(d, "EEE d MMM") + `, ${randInt(9, 16)}:00 ${randInt(0, 1) ? "AM" : "PM"}`;
         child.trialTutor = pick(tutors);
         child.packageInterest = pick(packageInterests);
         child.enrolledDate = `${randInt(1, 28)} Mar 2026`;
-        child.handedOff = rand() > 0.5;
         child.program = pick(programs);
         child.lessonDay = pick(lessonDays);
+        child.tutor = pick(tutors);
+        child.lessonStartDate = format(lessonStart, "d MMM yyyy");
+        child.lessonsCompleted = randInt(0, 48);
         child.programStatus = pick(programStatuses) ?? "Incomplete";
         child.enrolmentStatus = pick(enrolmentStatuses);
       }
@@ -249,9 +255,11 @@ function generateAdditionalEnrolmentParents(): Parent[] {
         trialTutor: pick(tutors),
         packageInterest: pick(packageInterests.filter(pkg => pkg !== "Trial only")),
         enrolledDate: `${randInt(1, 28)} Mar 2026`,
-        handedOff: rand() > 0.35,
         program,
         lessonDay,
+        tutor: pick(tutors),
+        lessonStartDate: `${randInt(1, 28)} Apr 2026`,
+        lessonsCompleted: randInt(0, 48),
       };
 
       result.push({

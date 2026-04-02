@@ -67,7 +67,7 @@ export default function TutorsPage() {
             {grouped.map(([country, countryTutors]) => (
               <> 
                 <tr key={`group-${country}`} className="bg-primary/5 border-t border-border">
-                  <td colSpan={6} className="px-4 py-2 font-semibold text-sm">
+                  <td colSpan={4} className="px-4 py-2 font-semibold text-sm">
                     {tutorCountryFlags[country] || ""} {country}
                   </td>
                 </tr>

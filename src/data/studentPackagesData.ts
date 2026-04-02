@@ -1,5 +1,6 @@
 import { addDays, format, parse } from "date-fns";
 import { countryFlags, getChildrenByStatus, type ChildWithParent } from "@/data/parentsData";
+import { packages as packageCatalog, type PackageData } from "@/data/packagesCatalog";
 
 const WEEKS_PER_TERM = 8;
 const DAYS_PER_TERM = WEEKS_PER_TERM * 7;

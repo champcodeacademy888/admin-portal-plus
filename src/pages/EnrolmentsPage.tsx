@@ -25,6 +25,21 @@ function ChannelIcon({ channel }: { channel: string }) {
   );
 }
 
+const enrolmentStatusVariantMap: Record<string, Parameters<typeof StatusBadge>[0]["variant"]> = {
+  Enrolled: "enrolled",
+  Paused: "pending",
+  "Pending Pause": "pending",
+  "Pending Complete": "upcoming",
+  Complete: "completed",
+  "To Confirm": "scheduled",
+};
+
+const programStatusVariantMap: Record<string, Parameters<typeof StatusBadge>[0]["variant"]> = {
+  Transferred: "upcoming",
+  Complete: "completed",
+  Incomplete: "pending",
+};
+
 const columns = [
   {
     key: "student", header: "Student", render: (r: ChildWithParent) => (
@@ -47,9 +62,15 @@ const columns = [
     ),
   },
   {
-    key: "status", header: "Status", render: (r: ChildWithParent) => {
-      const variant = r.status === "CLOSED WON" ? "closed_won" : "enrolled";
-      return <StatusBadge variant={variant}>{r.status}</StatusBadge>;
+    key: "programStatus", header: "Program Status", render: (r: ChildWithParent) => {
+      const value = r.programStatus || "Incomplete";
+      return <StatusBadge variant={programStatusVariantMap[value]}>{value}</StatusBadge>;
+    },
+  },
+  {
+    key: "enrolmentStatus", header: "Enrolment Status", render: (r: ChildWithParent) => {
+      const value = r.enrolmentStatus || "Enrolled";
+      return <StatusBadge variant={enrolmentStatusVariantMap[value]}>{value}</StatusBadge>;
     },
   },
   {
@@ -86,9 +107,13 @@ const columns = [
 ];
 
 const statusTabs = [
-  { label: "All", statuses: ["ENROLLED", "CLOSED WON"] },
-  { label: "Enrolled", statuses: ["ENROLLED"] },
-  { label: "Closed Won", statuses: ["CLOSED WON"] },
+  { label: "All", statuses: ["Enrolled", "Paused", "Pending Pause", "Pending Complete", "Complete", "To Confirm"] },
+  { label: "Enrolled", statuses: ["Enrolled"] },
+  { label: "Paused", statuses: ["Paused"] },
+  { label: "Pending Pause", statuses: ["Pending Pause"] },
+  { label: "Pending Complete", statuses: ["Pending Complete"] },
+  { label: "Complete", statuses: ["Complete"] },
+  { label: "To Confirm", statuses: ["To Confirm"] },
 ];
 
 export default function EnrolmentsPage() {
@@ -101,7 +126,7 @@ export default function EnrolmentsPage() {
 
   const filtered = enrolledChildren.filter(c => {
     const tab = statusTabs[activeTab];
-    if (!tab.statuses.includes(c.status)) return false;
+    if (!tab.statuses.includes(c.enrolmentStatus || "Enrolled")) return false;
     if (programFilter !== "all" && c.program !== programFilter) return false;
     if (dayFilter !== "all" && c.lessonDay !== dayFilter) return false;
     if (search) {
@@ -113,7 +138,7 @@ export default function EnrolmentsPage() {
 
   const tabs = statusTabs.map(t => ({
     label: t.label,
-    count: enrolledChildren.filter(c => t.statuses.includes(c.status)).length,
+    count: enrolledChildren.filter(c => t.statuses.includes(c.enrolmentStatus || "Enrolled")).length,
   }));
 
   return (
@@ -168,13 +193,15 @@ export default function EnrolmentsPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground font-mono">{selectedChild.id}</span>
                   <SheetTitle className="text-lg">{selectedChild.name}</SheetTitle>
-                  <StatusBadge variant={selectedChild.status === "CLOSED WON" ? "closed_won" : "enrolled"}>{selectedChild.status}</StatusBadge>
+                  <StatusBadge variant={enrolmentStatusVariantMap[selectedChild.enrolmentStatus || "Enrolled"]}>{selectedChild.enrolmentStatus || "Enrolled"}</StatusBadge>
                 </div>
               </SheetHeader>
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div><span className="text-muted-foreground text-xs block mb-1">Age</span><span>{selectedChild.age}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Level</span><span>{selectedChild.level}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Program Status</span><span>{selectedChild.programStatus || "Incomplete"}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Enrolment Status</span><span>{selectedChild.enrolmentStatus || "Enrolled"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Program</span><span>{selectedChild.program || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Lesson Day</span><span>{selectedChild.lessonDay || "—"}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Package</span><span>{selectedChild.packageInterest || "—"}</span></div>

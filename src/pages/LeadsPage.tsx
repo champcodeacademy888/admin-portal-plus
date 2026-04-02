@@ -1324,26 +1324,33 @@ export default function LeadsPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Lesson Start Date</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className={cn(
-                          "w-full justify-start text-left font-normal px-3 py-2 border border-border rounded-lg text-sm flex items-center gap-2",
-                          !lessonStartDate && "text-muted-foreground"
-                        )}>
-                          <Calendar size={14} />
-                          {lessonStartDate ? format(lessonStartDate, "d MMM yyyy") : "Pick a start date"}
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={lessonStartDate}
-                          onSelect={setLessonStartDate}
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Lesson Start Date & Time</label>
+                    {!selectedTutor ? (
+                      <p className="text-sm text-muted-foreground">Select a tutor first to see available slots</p>
+                    ) : availableSlots.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No available slots for {selectedTutor}</p>
+                    ) : (
+                      <Select value={selectedSlot} onValueChange={(val) => {
+                        setSelectedSlot(val);
+                        const slot = availableSlots.find(s => `${s.date}_${s.time}` === val);
+                        if (slot) {
+                          const [y, m, d] = slot.date.split("-").map(Number);
+                          const [h, min] = slot.time.split(":").map(Number);
+                          setLessonStartDate(new Date(y, m - 1, d, h, min));
+                        }
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a date & time..." />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {availableSlots.map((s) => (
+                            <SelectItem key={`${s.date}_${s.time}`} value={`${s.date}_${s.time}`}>
+                              {s.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                     {lessonStartDate && lessonStartDate < new Date() && (
                       <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
                         <AlertTriangle size={12} /> Start date is in the past — status will be set to Payment Failed

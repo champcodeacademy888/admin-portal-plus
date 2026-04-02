@@ -23,7 +23,7 @@ const TRIAL_GROUP_TABS = new Set(["Trial Arranged", "Trial Done"]);
 
 const LOST_REASONS = ["Price", "Timing", "Chose competitor", "Not interested", "No response", "Other"];
 
-const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST"];
+const leadStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "PENDING PAYMENT", "PAYMENT FAILED", "CLOSED WON", "LOST"];
 
 const allLeadChildren = getAllChildren().filter(c => leadStatuses.includes(c.status));
 
@@ -77,7 +77,7 @@ function FlameIcons({ count, color }: { count: number; color: string }) {
 const statusVariantMap: Record<string, string> = {
   "LEAD": "lead", "TRIAL DONE": "trial_attended", "MISSED TRIAL": "noshow",
   "ENROLLED": "enrolled", "CLOSED WON": "closed_won", "LOST": "lost",
-  "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry",
+  "TRIAL ARRANGED": "trial_arranged", "INQUIRY": "inquiry", "PENDING PAYMENT": "pending_payment", "PAYMENT FAILED": "payment_failed",
 };
 
 // Status advancement map
@@ -91,7 +91,7 @@ const nextStatusMap: Record<string, ChildStatus> = {
 
 const statusFilterMap: Record<string, string> = {
   "Inquiry": "INQUIRY", "Lead": "LEAD", "Trial Arranged": "TRIAL ARRANGED",
-  "Trial Done": "TRIAL DONE", "Missed Trial": "MISSED TRIAL", "Closed Won": "CLOSED WON",
+  "Trial Done": "TRIAL DONE", "Missed Trial": "MISSED TRIAL", "Pending Payment": "PENDING PAYMENT", "Payment Failed": "PAYMENT FAILED", "Closed Won": "CLOSED WON",
   "Lost": "LOST",
 };
 
@@ -104,6 +104,8 @@ const tabCounts: Record<string, number> = {
   "Trial Arranged": allLeadChildren.filter(c => c.status === "TRIAL ARRANGED").length,
   "Trial Done": allLeadChildren.filter(c => c.status === "TRIAL DONE").length,
   "Missed Trial": allLeadChildren.filter(c => c.status === "MISSED TRIAL").length,
+  "Pending Payment": allLeadChildren.filter(c => c.status === "PENDING PAYMENT").length,
+  "Payment Failed": allLeadChildren.filter(c => c.status === "PAYMENT FAILED").length,
   "Closed Won": allLeadChildren.filter(c => c.status === "CLOSED WON").length,
   "Lost": allLeadChildren.filter(c => c.status === "LOST").length,
 };
@@ -116,6 +118,8 @@ const tabs = [
   { label: "Trial Arranged", count: tabCounts["Trial Arranged"], badgeColor: "bg-muted-foreground/60" },
   { label: "Trial Done", count: tabCounts["Trial Done"], badgeColor: "bg-muted-foreground/60" },
   { label: "Missed Trial", count: tabCounts["Missed Trial"], badgeColor: "bg-muted-foreground/60" },
+  { label: "Pending Payment", count: tabCounts["Pending Payment"], badgeColor: "bg-warning" },
+  { label: "Payment Failed", count: tabCounts["Payment Failed"], badgeColor: "bg-destructive" },
   { label: "Closed Won", count: tabCounts["Closed Won"], badgeColor: "bg-muted-foreground/60" },
   { label: "Lost", count: tabCounts["Lost"], badgeColor: "bg-muted-foreground/60" },
 ];
@@ -179,10 +183,11 @@ function ConversionStatsBar() {
   );
 }
 
-const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "CLOSED WON", "LOST"];
+const kanbanStatuses: ChildStatus[] = ["INQUIRY", "LEAD", "TRIAL ARRANGED", "TRIAL DONE", "MISSED TRIAL", "PENDING PAYMENT", "PAYMENT FAILED", "CLOSED WON", "LOST"];
 const kanbanColors: Record<string, string> = {
   "INQUIRY": "border-t-info", "LEAD": "border-t-primary", "TRIAL ARRANGED": "border-t-warning",
   "TRIAL DONE": "border-t-purple-500", "MISSED TRIAL": "border-t-destructive",
+  "PENDING PAYMENT": "border-t-warning", "PAYMENT FAILED": "border-t-destructive",
   "CLOSED WON": "border-t-success", "LOST": "border-t-muted-foreground",
 };
 
@@ -771,6 +776,8 @@ export default function LeadsPage() {
     "Trial Arranged": "No trials arranged yet",
     "Trial Done": "No completed trials yet",
     "Missed Trial": "No missed trials — great!",
+  "Pending Payment": "No leads are waiting for payment",
+  "Payment Failed": "No failed payments right now",
     "Closed Won": "No closed won leads yet",
     "Lost": "No lost leads — keep it up!",
   };

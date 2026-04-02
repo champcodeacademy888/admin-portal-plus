@@ -479,6 +479,7 @@ export default function LeadsPage() {
     setSelectedCatalogPkg("");
     setSelectedTutor("");
     setSelectedProgram("");
+    setSelectedSlot("");
     setLessonStartDate(undefined);
     setCreatePkgSuccess(null);
     setCreatePkgOpen(true);

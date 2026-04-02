@@ -79,8 +79,6 @@ export default function TutorsPage() {
                     <td className="px-4 py-2.5 text-muted-foreground">{tutor.email}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>
                     <td className="px-4 py-2.5 text-center">{tutor.trialSessions || "—"}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.paidSessions || "—"}</td>
-                    <td className="px-4 py-2.5 text-center">{tutor.trialSessions || "—"}</td>
                   </tr>
                 ))}
               </>

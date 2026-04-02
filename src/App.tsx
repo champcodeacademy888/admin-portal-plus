@@ -8,15 +8,10 @@ import DashboardPage from "./pages/DashboardPage";
 import LeadsPage from "./pages/LeadsPage";
 import ParentsPage from "./pages/ParentsPage";
 import EnrolmentsPage from "./pages/EnrolmentsPage";
-import StudentsPage from "./pages/StudentsPage";
 import PackagesPage from "./pages/PackagesPage";
 import AttendancePage from "./pages/AttendancePage";
 import MakeupsPage from "./pages/MakeupsPage";
 import CoverPage from "./pages/CoverPage";
-import SchedulePage from "./pages/SchedulePage";
-import MyClassesPage from "./pages/MyClassesPage";
-import ReportsPage from "./pages/ReportsPage";
-import EnrollmentAnalyticsPage from "./pages/EnrollmentAnalyticsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,14 +29,9 @@ const App = () => (
             <Route path="/parents" element={<ParentsPage />} />
             <Route path="/enrolments" element={<EnrolmentsPage />} />
             <Route path="/packages" element={<PackagesPage />} />
-            <Route path="/students" element={<StudentsPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/makeups" element={<MakeupsPage />} />
             <Route path="/cover" element={<CoverPage />} />
-            <Route path="/schedule" element={<SchedulePage />} />
-            <Route path="/my-classes" element={<MyClassesPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/enrollment-analytics" element={<EnrollmentAnalyticsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AdminLayout>

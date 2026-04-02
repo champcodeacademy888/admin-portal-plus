@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { parents, countryFlags, todayFormatted, type Parent, type ChildWithParent, type ChildStatus, type AIStatus, getAllChildren } from "@/data/parentsData";
 import { getPackagesByCountry, createStudentPackageFromLead, formatMoney } from "@/data/studentPackagesData";
+import { getTutorAvailableSlots } from "@/data/calendarData";
 import type { PackageData } from "@/data/packagesCatalog";
 
 const today = new Date();

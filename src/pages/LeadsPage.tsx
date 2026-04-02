@@ -458,10 +458,16 @@ export default function LeadsPage() {
   const [selectedTutor, setSelectedTutor] = useState<string>("");
   const [selectedProgram, setSelectedProgram] = useState<string>("");
   const [lessonStartDate, setLessonStartDate] = useState<Date | undefined>();
+  const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [createPkgSuccess, setCreatePkgSuccess] = useState<string | null>(null);
 
   const tutorOptions = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
   const programOptions = ["Scratch","Python","Web Development","Roblox","Minecraft","JavaScript","Data Science","AI & Machine Learning"];
+
+  const availableSlots = useMemo(() => {
+    if (!selectedTutor) return [];
+    return getTutorAvailableSlots(selectedTutor);
+  }, [selectedTutor]);
 
   const availablePackages = useMemo(() => {
     if (!createPkgTarget) return [];

@@ -408,6 +408,7 @@ export default function LeadsPage() {
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [compact, setCompact] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set([
     "studentId", "student", "status", "country", "channel", "lastContacted", "trialDate", "trialTutor", "urgency", "actions"
   ]));

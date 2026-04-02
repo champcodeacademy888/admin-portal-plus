@@ -61,6 +61,7 @@ const LESSON_DAY_INDEX: Record<string, number> = {
   Saturday: 6,
 };
 const TIME_SLOTS = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "19:00"];
+const REFERENCE_WEEK_START = new Date(2026, 3, 5);
 
 function hashValue(input: string) {
   return input.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
@@ -110,6 +111,18 @@ function createSession(date: Date, hourAndMinute: string) {
   return session;
 }
 
+function getSharedLessonDate(lessonDay: string, weekOffset: number) {
+  const targetDay = LESSON_DAY_INDEX[lessonDay];
+  if (targetDay === undefined) return null;
+
+  const date = new Date(REFERENCE_WEEK_START);
+  while (date.getDay() !== targetDay) {
+    date.setDate(date.getDate() + 1);
+  }
+
+  return addWeeks(date, weekOffset);
+}
+
 function buildTrialSessions(): RawCalendarSession[] {
   return getAllChildren()
     .filter((child) => TRIAL_STATUSES.has(child.status) && child.trialDate && child.trialTutor)
@@ -139,12 +152,14 @@ function buildPaidSessions(): RawCalendarSession[] {
     .filter((child) => PAID_STATUSES.has(child.status) && child.lessonDay && child.tutor && child.lessonStartDate && child.program)
     .flatMap((child) => {
       const firstLessonDate = getNextLessonDate(child.lessonStartDate, child.lessonDay);
-      if (!firstLessonDate) return [];
-
-      const slot = TIME_SLOTS[hashValue(`${child.id}-${child.tutor}-${child.program}`) % TIME_SLOTS.length];
+      const slot = TIME_SLOTS[hashValue(`${child.tutor}-${child.lessonDay}`) % TIME_SLOTS.length];
+      const sharedWeekOffset = hashValue(`${child.program}-${child.parent.country}`) % 6;
 
       return Array.from({ length: 2 }, (_, index) => {
-        const lessonDate = addWeeks(firstLessonDate, index);
+        const sharedLessonDate = getSharedLessonDate(child.lessonDay!, sharedWeekOffset + index);
+        const lessonDate = sharedLessonDate ?? (firstLessonDate ? addWeeks(firstLessonDate, index) : null);
+        if (!lessonDate) return null;
+
         const session = createSession(lessonDate, slot);
 
         return {
@@ -161,7 +176,7 @@ function buildPaidSessions(): RawCalendarSession[] {
           student: child.name,
           parent: child.parent.name,
         };
-      });
+      }).filter((session): session is RawCalendarSession => Boolean(session));
     });
 }
 
@@ -217,16 +232,42 @@ function buildCalendarRecords() {
     .sort((recordA, recordB) => recordB.timestamp - recordA.timestamp || recordA.tutor.localeCompare(recordB.tutor));
 }
 
+function interleaveRecords(buckets: CalendarRecord[][], limit = Number.POSITIVE_INFINITY) {
+  const validBuckets = buckets.filter((bucket) => bucket.length > 0);
+  if (validBuckets.length === 0) return [];
+
+  const result: CalendarRecord[] = [];
+  const longestBucket = Math.max(...validBuckets.map((bucket) => bucket.length));
+
+  for (let index = 0; index < longestBucket && result.length < limit; index += 1) {
+    validBuckets.forEach((bucket) => {
+      const record = bucket[index];
+      if (record && result.length < limit) {
+        result.push(record);
+      }
+    });
+  }
+
+  return result;
+}
+
 function ensureThreeHundredRecords(records: CalendarRecord[]) {
-  if (records.length >= 300) return records.slice(0, 300);
+  const orderedRecords = interleaveRecords([
+    records.filter((record) => record.lessonType === "Trial"),
+    records.filter((record) => record.lessonType === "Paid Class"),
+    records.filter((record) => record.lessonType === "Mixed"),
+  ]);
+
+  if (orderedRecords.length >= 300) return orderedRecords.slice(0, 300);
   if (records.length === 0) return [];
 
-  const extended = [...records];
+  const baseRecords = orderedRecords.length > 0 ? orderedRecords : records;
+  const extended = [...baseRecords];
   let index = 0;
 
   while (extended.length < 300) {
-    const baseRecord = records[index % records.length];
-    const shiftedDate = addDays(new Date(baseRecord.timestamp), Math.floor(index / records.length) + 1);
+    const baseRecord = baseRecords[index % baseRecords.length];
+    const shiftedDate = addDays(new Date(baseRecord.timestamp), Math.floor(index / baseRecords.length) + 1);
 
     extended.push({
       ...baseRecord,

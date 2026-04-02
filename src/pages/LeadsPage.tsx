@@ -450,6 +450,41 @@ export default function LeadsPage() {
   // Inline lost reason for quick action
   const [inlineLostIndex, setInlineLostIndex] = useState<number | null>(null);
 
+  // Create Student Package dialog state
+  const [createPkgOpen, setCreatePkgOpen] = useState(false);
+  const [createPkgTarget, setCreatePkgTarget] = useState<ChildWithParent | null>(null);
+  const [selectedCatalogPkg, setSelectedCatalogPkg] = useState<string>("");
+  const [lessonStartDate, setLessonStartDate] = useState<Date | undefined>();
+  const [createPkgSuccess, setCreatePkgSuccess] = useState<string | null>(null);
+
+  const availablePackages = useMemo(() => {
+    if (!createPkgTarget) return [];
+    return getPackagesByCountry(createPkgTarget.parent.country);
+  }, [createPkgTarget]);
+
+  const handleOpenCreatePkg = (child: ChildWithParent) => {
+    setCreatePkgTarget(child);
+    setSelectedCatalogPkg("");
+    setLessonStartDate(undefined);
+    setCreatePkgSuccess(null);
+    setCreatePkgOpen(true);
+  };
+
+  const handleConfirmCreatePkg = () => {
+    if (!createPkgTarget || !selectedCatalogPkg || !lessonStartDate) return;
+    const catalogPkg = availablePackages.find((p) => String(p.id) === selectedCatalogPkg);
+    if (!catalogPkg) return;
+
+    const { pkg } = createStudentPackageFromLead(createPkgTarget, catalogPkg, lessonStartDate);
+
+    // If past start date → lead becomes PAYMENT FAILED
+    const isPast = lessonStartDate < new Date();
+    if (isPast) {
+      setCreatePkgSuccess(`Created ${pkg.id} with status Payment Due (start date passed → Payment Failed).`);
+    } else {
+      setCreatePkgSuccess(`Created ${pkg.id} — ${pkg.packageName}. ${pkg.totalInvoices} invoice(s) generated.`);
+    }
+  };
   const filteredLeads = useMemo(() => {
     let result = allLeadChildren.filter((child) => {
       const tab = tabs[activeTab].label;

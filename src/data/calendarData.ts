@@ -297,6 +297,18 @@ export function getTutorAvailableSlots(tutor: string): { date: string; time: str
   // For each date the tutor has classes, offer time slots around their schedule
   const slots: { date: string; time: string; label: string }[] = [];
   const allTimes = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
+  const now = new Date();
+  const todayStr = format(now, "yyyy-MM-dd");
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  const isSlotInFuture = (dateStr: string, time: string) => {
+    if (dateStr > todayStr) return true;
+    if (dateStr < todayStr) return false;
+    const [h, m] = time.split(":").map(Number);
+    return h > currentHour || (h === currentHour && m > currentMinute);
+  };
+
   const formatLabel = (dateStr: string, time: string) => {
     const parsed = parse(dateStr, "yyyy-MM-dd", new Date());
     return `${format(parsed, "d MMM yyyy")} ${time}`;
@@ -304,15 +316,14 @@ export function getTutorAvailableSlots(tutor: string): { date: string; time: str
   dateSet.forEach(dateStr => {
     const busyTimes = new Set(tutorRecords.filter(r => r.date === dateStr).map(r => r.time));
     allTimes.forEach(t => {
-      if (!busyTimes.has(t)) {
+      if (!busyTimes.has(t) && isSlotInFuture(dateStr, t)) {
         slots.push({ date: dateStr, time: t, label: formatLabel(dateStr, t) });
       }
     });
   });
   // Also add some future dates where tutor has no classes yet
-  const today = new Date();
   for (let i = 1; i <= 30; i++) {
-    const d = addDays(today, i);
+    const d = addDays(now, i);
     const ds = format(d, "yyyy-MM-dd");
     if (!dateSet.has(ds)) {
       ["10:00","14:00","16:00"].forEach(t => {

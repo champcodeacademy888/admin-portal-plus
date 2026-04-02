@@ -18,16 +18,63 @@ interface PerformanceRecord {
   date: string;
 }
 
-// Seed some dummy records
-const seedRecords: PerformanceRecord[] = [
-  { id: "PR-1", tutorName: "James Yeo", parentName: "Sarah Tan", type: "Compliment", note: "Parent praised James for being very patient with her child.", imageUrl: null, date: "28 Mar 2026" },
-  { id: "PR-2", tutorName: "Abigael Pastrana", parentName: "Maria Santos", type: "Compliment", note: "Child loves Abigael's teaching style.", imageUrl: null, date: "27 Mar 2026" },
-  { id: "PR-3", tutorName: "Dickson Hau", parentName: "Lim Wei Ming", type: "Complaint", note: "Parent felt the lesson was too fast-paced for the child.", imageUrl: null, date: "26 Mar 2026" },
-  { id: "PR-4", tutorName: "Divina Violet", parentName: "Priya Sharma", type: "Compliment", note: "Excellent progress report shared by tutor.", imageUrl: null, date: "25 Mar 2026" },
-  { id: "PR-5", tutorName: "Lester Tan", parentName: "David Lee", type: "Complaint", note: "Lesson started late by 10 minutes.", imageUrl: null, date: "24 Mar 2026" },
-  { id: "PR-6", tutorName: "Melinda Chua", parentName: "Jenny Koh", type: "Compliment", note: "Parent shared screenshot of child's completed project — very impressed.", imageUrl: null, date: "23 Mar 2026" },
+const complimentNotes = [
+  "Parent praised tutor for being very patient with the child.",
+  "Child loves the teaching style — very engaging.",
+  "Excellent progress report shared by tutor.",
+  "Parent shared screenshot of child's completed project — very impressed.",
+  "Tutor went above and beyond to help the child understand loops.",
+  "Child was excited to show parents what they learned in class.",
+  "Parent mentioned child now practices coding on their own after class.",
+  "Tutor provided extra resources for the child to practice.",
+  "Parent said the child's confidence has grown significantly.",
+  "Child built a game independently after just 3 lessons.",
+  "Parent appreciated the tutor's detailed feedback after each class.",
+  "Tutor helped child overcome frustration with debugging — parent grateful.",
+  "Child asked to increase lesson frequency because of tutor.",
+  "Parent recommended us to friends because of this tutor.",
+  "Tutor adapted lesson plan to match child's learning pace.",
+];
+const complaintNotes = [
+  "Lesson started late by 10 minutes.",
+  "Parent felt the lesson was too fast-paced for the child.",
+  "Child was confused after lesson — parent wants simpler explanations.",
+  "Tutor didn't send lesson summary after class.",
+  "Parent said child felt ignored during group session.",
+  "Audio quality was poor during the lesson.",
+  "Tutor cancelled last minute without rescheduling.",
+  "Parent wants more interactive activities, less lecturing.",
+  "Child reported tutor seemed distracted during lesson.",
+  "Parent expected more homework/practice materials.",
 ];
 
+function generateDummyRecords(): PerformanceRecord[] {
+  const allParentNames = parents.map(p => p.name);
+  const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+  const records: PerformanceRecord[] = [];
+  const today = new Date();
+
+  // Ensure every tutor gets at least some records
+  for (let i = 0; i < 106; i++) {
+    const tutor = tutors[i % tutors.length];
+    const isCompliment = Math.random() > 0.3;
+    const type: "Compliment" | "Complaint" = isCompliment ? "Compliment" : "Complaint";
+    const note = isCompliment ? pick(complimentNotes) : pick(complaintNotes);
+    const dayOffset = Math.floor(Math.random() * 60);
+    records.push({
+      id: `PR-${i + 1}`,
+      tutorName: tutor.name,
+      parentName: pick(allParentNames),
+      type,
+      note,
+      imageUrl: null,
+      date: format(subDays(today, dayOffset), "d MMM yyyy"),
+    });
+  }
+  return records;
+}
+
+const seedRecords = generateDummyRecords();
 let nextId = seedRecords.length + 1;
 
 export default function TutorPerformancePage() {

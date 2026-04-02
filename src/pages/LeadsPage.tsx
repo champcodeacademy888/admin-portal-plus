@@ -470,6 +470,8 @@ export default function LeadsPage() {
   const handleOpenCreatePkg = (child: ChildWithParent) => {
     setCreatePkgTarget(child);
     setSelectedCatalogPkg("");
+    setSelectedTutor("");
+    setSelectedProgram("");
     setLessonStartDate(undefined);
     setCreatePkgSuccess(null);
     setCreatePkgOpen(true);

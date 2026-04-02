@@ -272,10 +272,10 @@ function generateParents(): Parent[] {
     const lastContactedHrs = randInt(0, 168);
     const lastContacted = hrsToLabel(lastContactedHrs);
     const phoneCountryCodes: Record<string, string> = {
-      "Philippines": "+63","Singapore": "+65","Malaysia": "+60","Sri Lanka": "+94",
-      "UAE": "+971","Hong Kong": "+852","Indonesia": "+62",
+      "Philippines": "63","Singapore": "65","Malaysia": "60","Sri Lanka": "94",
+      "UAE": "971","Hong Kong": "852","Indonesia": "62",
     };
-    const phone = `${phoneCountryCodes[country]} ${randInt(900,999)} ${randInt(100,999)} ${randInt(1000,9999)}`;
+    const phone = `${phoneCountryCodes[country]}${randInt(900,999)}${randInt(100,999)}${randInt(1000,9999)}`;
 
     // Generate 1-3 children per parent, each with their own status
     const childCount = randInt(1, 3);

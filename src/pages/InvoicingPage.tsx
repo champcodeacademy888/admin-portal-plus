@@ -166,7 +166,7 @@ export default function InvoicingPage() {
         totalItems={filtered.length}
         emptyMessage="No invoices found"
         onRowClick={(row) => {
-          setSelectedInvoice(row as InvoiceRecord);
+          setSelectedInvoice(row as unknown as InvoiceRecord);
           setPanelOpen(true);
         }}
       />

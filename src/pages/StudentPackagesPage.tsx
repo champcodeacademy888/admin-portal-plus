@@ -159,7 +159,7 @@ export default function StudentPackagesPage() {
         totalItems={filtered.length}
         emptyMessage="No student packages found"
         onRowClick={(row) => {
-          setSelectedPackage(row as StudentPackageRecord);
+          setSelectedPackage(row as unknown as StudentPackageRecord);
           setPanelOpen(true);
         }}
       />

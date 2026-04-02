@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Users, ClipboardList, UserPlus, GraduationCap,
-  CalendarCheck, RefreshCw, ArrowLeftRight, Calendar, Monitor,
-  BarChart3, PieChart, Globe, LogOut, ChevronDown, Package, PanelLeftClose, PanelLeft
+  LayoutDashboard, Users, ClipboardList, UserPlus,
+  CalendarCheck, RefreshCw, ArrowLeftRight,
+  Globe, LogOut, ChevronDown, Package, PanelLeftClose, PanelLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -14,14 +14,9 @@ const menuItems = [
   { label: "Leads", icon: ClipboardList, path: "/leads" },
   { label: "Enrolments", icon: UserPlus, path: "/enrolments" },
   { label: "Packages", icon: Package, path: "/packages" },
-  { label: "Students", icon: GraduationCap, path: "/students" },
   { label: "Attendance", icon: CalendarCheck, path: "/attendance" },
   { label: "Makeups", icon: RefreshCw, path: "/makeups" },
   { label: "Cover", icon: ArrowLeftRight, path: "/cover" },
-  { label: "Schedule", icon: Calendar, path: "/schedule" },
-  { label: "My Classes", icon: Monitor, path: "/my-classes" },
-  { label: "Reports", icon: BarChart3, path: "/reports" },
-  { label: "Enrollment analytics", icon: PieChart, path: "/enrollment-analytics" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

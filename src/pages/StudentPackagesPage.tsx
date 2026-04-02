@@ -80,9 +80,9 @@ export default function StudentPackagesPage() {
       render: (record: StudentPackageRecord) => <span className="font-medium">{record.packageName}</span>,
     },
     {
-      key: "terms",
-      header: "Terms",
-      render: (record: StudentPackageRecord) => <span>{record.termCount}</span>,
+      key: "weeks",
+      header: "Weeks",
+      render: (record: StudentPackageRecord) => <span>{record.totalWeeks}</span>,
     },
     {
       key: "termStartDate",
@@ -203,7 +203,7 @@ export default function StudentPackagesPage() {
                   <div><span className="text-muted-foreground text-xs block mb-1">Program</span><span>{selectedPackage.program}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Parent</span><span>{selectedPackage.parentName}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Package</span><span>{selectedPackage.packageName}</span></div>
-                  <div><span className="text-muted-foreground text-xs block mb-1">Terms</span><span>{selectedPackage.termCount}</span></div>
+                  <div><span className="text-muted-foreground text-xs block mb-1">Weeks</span><span>{selectedPackage.totalWeeks}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Paid Invoices</span><span>{selectedPackage.paidInvoices} / {selectedPackage.totalInvoices}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Total Amount</span><span>{formatMoney(selectedPackage.totalAmount, selectedPackage.currency)}</span></div>
                   <div><span className="text-muted-foreground text-xs block mb-1">Paid Amount</span><span>{formatMoney(selectedPackage.paidAmount, selectedPackage.currency)}</span></div>

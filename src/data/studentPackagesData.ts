@@ -1,6 +1,9 @@
 import { addDays, format, parse } from "date-fns";
 import { countryFlags, getChildrenByStatus, type ChildWithParent } from "@/data/parentsData";
 
+const WEEKS_PER_TERM = 8;
+const DAYS_PER_TERM = WEEKS_PER_TERM * 7;
+
 export type StudentPackageStatus = "Pending" | "Active" | "Payment Due" | "Completed";
 export type InvoiceStatus = "Paid" | "Pending" | "Overdue";
 
@@ -39,6 +42,7 @@ export interface StudentPackageRecord {
   program: string;
   packageName: string;
   termCount: number;
+  totalWeeks: number;
   totalInvoices: number;
   paidInvoices: number;
   totalAmount: number;
@@ -145,16 +149,17 @@ function buildStudentPackages() {
 
   const packages: StudentPackageRecord[] = closedWonChildren.map((child, index) => {
     const termCount = getTermCount(child.packageInterest);
+    const totalWeeks = termCount * WEEKS_PER_TERM;
     const perTermAmount = getPerTermAmount(child.parent.country, child.packageInterest);
     const currency = currencyByCountry[child.parent.country] || "USD";
     const packageId = `PKG-${8200 + index}`;
     const packageStartDate = parsePackageStartDate(child.lessonStartDate);
     const invoiceStatuses = getInvoiceStatuses(termCount, index);
-    const packageName = `${child.program || "General Coding"} ${termCount}-Term Package`;
+    const packageName = `${child.program || "General Coding"} ${totalWeeks}-Week Package`;
 
     const invoices: InvoiceRecord[] = invoiceStatuses.map((status, invoiceIndex) => {
-      const termStartDate = addDays(packageStartDate, invoiceIndex * 28);
-      const termEndDate = addDays(termStartDate, 27);
+      const termStartDate = addDays(packageStartDate, invoiceIndex * DAYS_PER_TERM);
+      const termEndDate = addDays(termStartDate, DAYS_PER_TERM - 1);
       const dueDate = termStartDate;
       const issuedDate = addDays(dueDate, -7);
       const paidDate = status === "Paid" ? addDays(dueDate, -pick([1, 2, 3, 5])) : undefined;
@@ -191,7 +196,7 @@ function buildStudentPackages() {
       .reduce((sum, invoice) => sum + invoice.amount, 0);
     const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
     const status = getPackageStatus(invoices);
-    const packageEndDate = addDays(packageStartDate, Math.max(termCount - 1, 0) * 28);
+    const packageEndDate = addDays(packageStartDate, Math.max(totalWeeks * 7 - 1, 0));
     const nextInvoiceCreationDate = invoices.find((invoice) => invoice.status !== "Paid")?.nextInvoiceCreationDate;
     const paymentCollectionDate = invoices.find((invoice) => invoice.status !== "Paid")?.paymentCollectionDate ?? invoices[invoices.length - 1]?.paymentCollectionDate;
 
@@ -206,6 +211,7 @@ function buildStudentPackages() {
       program: child.program || "General Coding",
       packageName,
       termCount,
+      totalWeeks,
       totalInvoices: invoices.length,
       paidInvoices: invoices.filter((invoice) => invoice.status === "Paid").length,
       totalAmount,

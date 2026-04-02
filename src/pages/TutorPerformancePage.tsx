@@ -203,7 +203,6 @@ export default function TutorPerformancePage() {
           <thead>
             <tr className="bg-muted/50 border-b border-border text-left">
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Date</th>
-              <th className="px-4 py-2.5 font-medium text-muted-foreground">Tutor</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Parent</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground text-center">Type</th>
               <th className="px-4 py-2.5 font-medium text-muted-foreground">Note</th>
@@ -211,35 +210,54 @@ export default function TutorPerformancePage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No records found</td></tr>
+            {groupedByTutor.length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No records found</td></tr>
             )}
-            {filtered.map(r => (
-              <tr key={r.id} className="border-t border-border hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">{r.date}</td>
-                <td className="px-4 py-2.5 font-medium">{r.tutorName}</td>
-                <td className="px-4 py-2.5">{r.parentName}</td>
-                <td className="px-4 py-2.5 text-center">
-                  <span className={cn(
-                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
-                    r.type === "Compliment" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                  )}>
-                    {r.type === "Compliment" ? <ThumbsUp size={11} /> : <ThumbsDown size={11} />}
-                    {r.type}
-                  </span>
-                </td>
-                <td className="px-4 py-2.5 max-w-xs truncate">{r.note}</td>
-                <td className="px-4 py-2.5 text-center">
-                  {r.imageUrl ? (
-                    <button onClick={() => setViewImage(r.imageUrl)} className="text-primary hover:text-primary/80">
-                      <Eye size={16} />
-                    </button>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {groupedByTutor.map(([tutorName, tutorRecords]) => {
+              const tutor = tutors.find(t => t.name === tutorName);
+              const flag = tutor ? (tutorCountryFlags[tutor.country] || "") : "";
+              const compCount = tutorRecords.filter(r => r.type === "Compliment").length;
+              const complCount = tutorRecords.filter(r => r.type === "Complaint").length;
+              return (
+                <>
+                  <tr key={`group-${tutorName}`} className="bg-primary/5 border-t border-border">
+                    <td colSpan={5} className="px-4 py-2">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-sm">{flag} {tutorName}</span>
+                        <span className="text-xs text-muted-foreground">({tutorRecords.length} records)</span>
+                        <span className="inline-flex items-center gap-1 text-xs text-success"><ThumbsUp size={10} /> {compCount}</span>
+                        <span className="inline-flex items-center gap-1 text-xs text-destructive"><ThumbsDown size={10} /> {complCount}</span>
+                      </div>
+                    </td>
+                  </tr>
+                  {tutorRecords.map(r => (
+                    <tr key={r.id} className="border-t border-border hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">{r.date}</td>
+                      <td className="px-4 py-2.5">{r.parentName}</td>
+                      <td className="px-4 py-2.5 text-center">
+                        <span className={cn(
+                          "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+                          r.type === "Compliment" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+                        )}>
+                          {r.type === "Compliment" ? <ThumbsUp size={11} /> : <ThumbsDown size={11} />}
+                          {r.type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 max-w-xs truncate">{r.note}</td>
+                      <td className="px-4 py-2.5 text-center">
+                        {r.imageUrl ? (
+                          <button onClick={() => setViewImage(r.imageUrl)} className="text-primary hover:text-primary/80">
+                            <Eye size={16} />
+                          </button>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              );
+            })}
           </tbody>
         </table>
       </div>

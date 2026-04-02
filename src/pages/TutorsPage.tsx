@@ -6,19 +6,6 @@ import { tutors, tutorCountryFlags } from "@/data/tutorsData";
 export default function TutorsPage() {
   const [search, setSearch] = useState("");
 
-  const allChildren = useMemo(() => getAllChildren(), []);
-
-  const tutorStats = useMemo(() => {
-    return tutors.map(tutor => {
-      const calendarSessions = calendarRecords.filter(r => r.tutor === tutor.name);
-      const paidSessions = calendarSessions.filter(r => r.lessonType === "Paid Class" || r.lessonType === "Mixed");
-      const trialSessions = calendarSessions.filter(r => r.lessonType === "Trial");
-      const enrolledStudents = allChildren.filter(c => c.tutor === tutor.name && c.enrolmentStatus === "Enrolled");
-      const trialStudents = allChildren.filter(c => c.trialTutor === tutor.name);
-      return { ...tutor, paidSessions: paidSessions.length, trialSessions: trialSessions.length, enrolledStudents: enrolledStudents.length, trialStudents: trialStudents.length };
-    });
-  }, [allChildren]);
-
   const filtered = useMemo(() => {
     if (!search) return tutorStats;
     const s = search.toLowerCase();

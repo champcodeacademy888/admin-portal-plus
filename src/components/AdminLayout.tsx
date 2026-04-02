@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, ClipboardList, UserPlus,
   CalendarCheck, RefreshCw, ArrowLeftRight,
-  Globe, LogOut, ChevronDown, Package, PanelLeftClose, PanelLeft, FileText, Calendar, GraduationCap
+  Globe, LogOut, ChevronDown, Package, PanelLeftClose, PanelLeft, FileText, Calendar, GraduationCap, Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -14,6 +14,7 @@ const menuItems = [
   { label: "Leads", icon: ClipboardList, path: "/leads" },
   { label: "Enrolments", icon: UserPlus, path: "/enrolments" },
   { label: "Tutors", icon: GraduationCap, path: "/tutors" },
+  { label: "Tutor Performance", icon: Star, path: "/tutor-performance" },
   { label: "Calendar", icon: Calendar, path: "/calendar" },
   { label: "Packages", icon: Package, path: "/packages" },
   { label: "Student Packages", icon: Package, path: "/student-packages" },

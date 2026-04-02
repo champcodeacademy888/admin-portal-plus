@@ -7,9 +7,9 @@ export default function TutorsPage() {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    if (!search) return tutorStats;
+    if (!search) return tutors;
     const s = search.toLowerCase();
-    return tutorStats.filter(t => t.name.toLowerCase().includes(s) || t.country.toLowerCase().includes(s));
+    return tutors.filter(t => t.name.toLowerCase().includes(s) || t.country.toLowerCase().includes(s));
   }, [search, tutorStats]);
 
   const grouped = useMemo(() => {

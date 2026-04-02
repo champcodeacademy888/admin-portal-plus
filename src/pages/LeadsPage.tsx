@@ -142,12 +142,6 @@ function AIStatusBadge({ status }: { status: AIStatus }) {
   return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles[status]}`}>{labels[status]}</span>;
 }
 
-function FollowUpBadge({ hoursSinceTrial }: { hoursSinceTrial: number }) {
-  if (hoursSinceTrial < 12) return <span className="ml-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-warning/15 text-warning">Follow up due</span>;
-  if (hoursSinceTrial <= 24) return <span className="ml-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-orange-500/15 text-orange-600">Follow up soon</span>;
-  return <span className="ml-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-destructive/15 text-destructive">Overdue</span>;
-}
-
 function ConversionStatsBar() {
   const total = allLeadChildren.length;
   const inquiries = allLeadChildren.filter(l => l.status === "INQUIRY").length;
@@ -587,7 +581,6 @@ export default function LeadsPage() {
       key: "status", header: "Status", render: (r: ChildWithParent) => (
         <div className="flex items-center gap-1 flex-wrap">
           <StatusBadge variant={statusVariantMap[r.status] as any}>{r.status}</StatusBadge>
-          {r.status === "TRIAL DONE" && r.hoursSinceTrial !== undefined && <FollowUpBadge hoursSinceTrial={r.hoursSinceTrial} />}
         </div>
       ),
     },

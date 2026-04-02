@@ -454,8 +454,13 @@ export default function LeadsPage() {
   const [createPkgOpen, setCreatePkgOpen] = useState(false);
   const [createPkgTarget, setCreatePkgTarget] = useState<ChildWithParent | null>(null);
   const [selectedCatalogPkg, setSelectedCatalogPkg] = useState<string>("");
+  const [selectedTutor, setSelectedTutor] = useState<string>("");
+  const [selectedProgram, setSelectedProgram] = useState<string>("");
   const [lessonStartDate, setLessonStartDate] = useState<Date | undefined>();
   const [createPkgSuccess, setCreatePkgSuccess] = useState<string | null>(null);
+
+  const tutorOptions = ["Coach Ben","Coach Lily","Coach Arjun","Coach Mei","Coach Ryan","Coach Sofia","Coach Leo","Coach Hana"];
+  const programOptions = ["Scratch","Python","Web Development","Roblox","Minecraft","JavaScript","Data Science","AI & Machine Learning"];
 
   const availablePackages = useMemo(() => {
     if (!createPkgTarget) return [];
@@ -465,6 +470,8 @@ export default function LeadsPage() {
   const handleOpenCreatePkg = (child: ChildWithParent) => {
     setCreatePkgTarget(child);
     setSelectedCatalogPkg("");
+    setSelectedTutor("");
+    setSelectedProgram("");
     setLessonStartDate(undefined);
     setCreatePkgSuccess(null);
     setCreatePkgOpen(true);
@@ -1281,6 +1288,34 @@ export default function LeadsPage() {
                   </div>
 
                   <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Tutor</label>
+                    <Select value={selectedTutor} onValueChange={setSelectedTutor}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a tutor..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tutorOptions.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Program</label>
+                    <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a program..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {programOptions.map((p) => (
+                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Lesson Start Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -1318,7 +1353,7 @@ export default function LeadsPage() {
             {!createPkgSuccess && (
               <button
                 onClick={handleConfirmCreatePkg}
-                disabled={!selectedCatalogPkg || !lessonStartDate}
+                disabled={!selectedCatalogPkg || !lessonStartDate || !selectedTutor || !selectedProgram}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
               >
                 Create Package & Invoice
